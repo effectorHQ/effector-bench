@@ -11,7 +11,9 @@
     "bench:tier-b": "node tier-b/benchmark.js",
     "bench:tier-b:verbose": "node tier-b/benchmark.js --verbose",
     "bench:all": "node benchmark.js; node tier-b/benchmark.js",
-    "bench:all:verbose": "node benchmark.js --verbose; node tier-b/benchmark.js --verbose"
+    "bench:all:verbose": "node benchmark.js --verbose; node tier-b/benchmark.js --verbose",
+    "figures": "python3 figures/generate.py",
+    "figures:hd": "python3 figures/generate.py --dpi 300"
   },
   "engines": {
     "node": ">=20"

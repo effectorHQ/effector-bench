@@ -10,6 +10,10 @@ Tier A  89.9% accuracy  (161/179 cases, 18 known gaps, 2.9ms)
 Tier B  +36 combined Δ  (+18 comparable, +64 differential, 6 regressions)
 ```
 
+<p align="center">
+  <img src="figures/out/overview-compact.png" alt="effector-bench v2.0 overview" width="800" />
+</p>
+
 ---
 
 ## Quick Start
@@ -26,6 +30,15 @@ npm run bench:verbose                          # Tier A only
 npm run bench:tier-b:verbose                   # Tier B only
 npm run bench:verbose -- --category security   # Single category
 ```
+
+Regenerate figures:
+
+```bash
+npm run figures        # 150 DPI (default)
+npm run figures:hd     # 300 DPI
+```
+
+Requires Python 3.10+ with `matplotlib` and `numpy`.
 
 ---
 
@@ -48,6 +61,9 @@ effector-bench/
 │   │   └── corpus.json        10 MCP tools (baseline + effector)
 │   └── results/
 │       └── latest.json        Auto-generated Tier B results
+├── figures/
+│   ├── generate.py            Figure generator (matplotlib)
+│   └── out/                   Generated PNGs
 ├── METHODOLOGY.md             Full methodology documentation
 └── package.json
 ```
@@ -57,6 +73,10 @@ effector-bench/
 ## Tier A — Toolchain Accuracy
 
 Deterministic, no LLM, no API keys. Tests whether effector's type checker, validator, compositor, security scanner, and compiler produce correct results. Includes adversarial cases that expose real toolchain limitations.
+
+<p align="center">
+  <img src="figures/out/tier-a-categories.png" alt="Tier A category breakdown" width="700" />
+</p>
 
 | Category | Cases | Score | What It Tests |
 |---|---|---|---|
@@ -95,15 +115,35 @@ Controlled variable experiment: same 10 MCP tools, two schema representations. E
 
 ### Results
 
+<p align="center">
+  <img src="figures/out/tier-b-dimensions.png" alt="Tier B dimension comparison with error bars" width="750" />
+</p>
+
 | | Baseline (μ) | Effector (μ) | Δ |
 |---|---|---|---|
 | Comparable Average | 25 | 43 | **+18** |
 | Differential Average | 7 | 71 | **+64** |
 | Combined Overall | 18 | 54 | **+36** |
 
+<p align="center">
+  <img src="figures/out/tier-b-summary.png" alt="Tier B aggregate deltas by metric class" width="750" />
+</p>
+
+### Per-Tool Breakdown
+
+The heatmap below shows the score delta (effector − baseline) for each tool × dimension combination. The D2 column makes the parameter extraction regression visually obvious:
+
+<p align="center">
+  <img src="figures/out/tier-b-heatmap.png" alt="Tier B per-tool score delta heatmap" width="650" />
+</p>
+
 ### Regressions
 
 6/10 tools show **D2 (Parameter Extraction) regression**. Root cause: `compile()` generates `inputSchema.properties` only for `envRead` variables. Tools without `envRead` produce empty parameter schemas, scoring lower than baseline. This is a real compiler limitation, not a measurement artifact.
+
+<p align="center">
+  <img src="figures/out/tier-b-regression.png" alt="D2 regression dumbbell chart" width="700" />
+</p>
 
 ### Composition Chain Verification
 
@@ -166,4 +206,4 @@ Controlled variable experiment: same 10 MCP tools, two schema representations. E
 
 ## License
 
-This project is currently licensed under the Apache 2.0 License 。
+This project is currently licensed under the [Apache License, Version 2.0](LICENSE.md).
