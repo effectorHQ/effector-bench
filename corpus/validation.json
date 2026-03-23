@@ -1,0 +1,33 @@
+[
+  { "id": "valid-01", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "A useful tool for processing data" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-02", "manifest": { "name": "code-review", "version": "0.1.0", "type": "skill", "description": "Automated code review tool" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-03", "manifest": { "name": "@effectorhq/lint", "version": "2.0.0", "type": "extension", "description": "Linting extension for effector manifests" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-04", "manifest": { "name": "deploy-pipeline", "version": "1.0.0-beta.1", "type": "workflow", "description": "Deployment workflow for cloud services" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-05", "manifest": { "name": "my-workspace", "version": "1.0.0", "type": "workspace", "description": "Development workspace configuration" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-06", "manifest": { "name": "api-bridge", "version": "0.9.0", "type": "bridge", "description": "Bridge between REST and GraphQL APIs" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-07", "manifest": { "name": "system-prompt", "version": "1.0.0", "type": "prompt", "description": "System prompt template for code generation" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-08", "manifest": { "name": "ab", "version": "0.0.1", "type": "skill", "description": "Minimum name length tool" }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-09", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Tool with interface", "interface": { "input": "String", "output": "Markdown" } }, "expected": { "valid": true, "errorCount": 0 } },
+  { "id": "valid-10", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Tool with all optional fields", "interface": { "input": "CodeDiff", "output": "ReviewReport", "context": ["Repository"] }, "permissions": { "network": false, "filesystem": ["read"] } }, "expected": { "valid": true, "errorCount": 0 } },
+
+  { "id": "invalid-01", "manifest": { "version": "1.0.0", "type": "skill", "description": "Missing name field" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-02", "manifest": { "name": "tool", "type": "skill", "description": "Missing version field" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-03", "manifest": { "name": "tool", "version": "1.0.0", "description": "Missing type field" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-04", "manifest": { "name": "tool", "version": "1.0.0", "type": "skill" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-05", "manifest": { "name": "My Tool", "version": "1.0.0", "type": "skill", "description": "Name with spaces" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-06", "manifest": { "name": "a", "version": "1.0.0", "type": "skill", "description": "Single char name too short" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-07", "manifest": { "name": "my-tool", "version": "1.0", "type": "skill", "description": "Two-part version" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-08", "manifest": { "name": "my-tool", "version": "v1.0.0", "type": "skill", "description": "Version with v prefix" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-09", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "plugin", "description": "Invalid type enum" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-10", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Too short" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-11", "manifest": {}, "expected": { "valid": false, "minErrors": 4 } },
+  { "id": "invalid-12", "manifest": { "name": "UPPERCASE", "version": "1.0.0", "type": "skill", "description": "Uppercase names invalid" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-13", "manifest": { "name": "my-tool", "version": "01.0.0", "type": "skill", "description": "Leading zeros in semver" }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "invalid-14", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "Skill", "description": "Type must be lowercase" }, "expected": { "valid": false, "minErrors": 1 } },
+
+  { "id": "gap-uf-01", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Valid tool but has unknown fields", "foobar": "unknown", "xyz": 123 }, "expected": { "valid": false, "minErrors": 1 }, "note": "KNOWN GAP: validator does not reject unknown top-level fields" },
+  { "id": "gap-uf-02", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Valid tool with typo'd field", "interafce": { "input": "String" } }, "expected": { "valid": false, "minErrors": 1 }, "note": "KNOWN GAP: typo in 'interface' goes undetected — no unknown-field check" },
+  { "id": "gap-it-01", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Valid tool with invalid interface type", "interface": { "input": "NotARealType", "output": "AlsoFake" } }, "expected": { "valid": false, "minErrors": 1 }, "note": "KNOWN GAP: validateManifest does not check interface type names against catalog — only validateTypeNames does" },
+  { "id": "gap-dl-01", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "This description is intentionally made way too long to exceed the 200-character maximum. It keeps going and going and going to fill up space and make sure we definitely cross the boundary for the validator." }, "expected": { "valid": false, "minErrors": 1 } },
+  { "id": "gap-sq-01", "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Valid tool", "interface": { "input": "String" } }, "expected": { "valid": true, "errorCount": 0 }, "note": "Output-only interface is valid (no output is fine)" }
+]

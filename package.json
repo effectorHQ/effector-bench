@@ -1,0 +1,15 @@
+{
+  "name": "@effectorhq/bench",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Benchmark suite for the effector toolchain — 200 test cases across 5 verification categories",
+  "scripts": {
+    "bench": "node benchmark.js",
+    "bench:verbose": "node benchmark.js --verbose"
+  },
+  "dependencies": {
+    "@effectorhq/core": "^1.0.0",
+    "@effectorhq/types": "^1.0.0"
+  }
+}

@@ -1,0 +1,68 @@
+[
+  { "id": "exact-01", "output": "String", "input": "String", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-02", "output": "CodeDiff", "input": "CodeDiff", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-03", "output": "ReviewReport", "input": "ReviewReport", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-04", "output": "Markdown", "input": "Markdown", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-05", "output": "Notification", "input": "Notification", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-06", "output": "FilePath", "input": "FilePath", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-07", "output": "URL", "input": "URL", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-08", "output": "GitHubCredentials", "input": "GitHubCredentials", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-09", "output": "TestResult", "input": "TestResult", "expected": { "compatible": true, "reason": "exact-match" } },
+  { "id": "exact-10", "output": "SlackMessage", "input": "SlackMessage", "expected": { "compatible": true, "reason": "exact-match" } },
+
+  { "id": "alias-01", "output": "PlainText", "input": "String", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-02", "output": "String", "input": "PlainText", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-03", "output": "TextString", "input": "String", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-04", "output": "MarkdownReport", "input": "Markdown", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-05", "output": "MarkdownContent", "input": "Markdown", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-06", "output": "JSONResult", "input": "JSON", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-07", "output": "JSONPayload", "input": "JSON", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-08", "output": "Markdown", "input": "MarkdownReport", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-09", "output": "JSON", "input": "JSONResult", "expected": { "compatible": true, "reason": "alias-match" } },
+  { "id": "alias-10", "output": "PlainText", "input": "TextString", "expected": { "compatible": true, "reason": "alias-match" } },
+
+  { "id": "subtype-01", "output": "SecurityReport", "input": "ReviewReport", "expected": { "compatible": true, "reason": "subtype-match" } },
+  { "id": "subtype-02", "output": "SlackMessage", "input": "Notification", "expected": { "compatible": true, "reason": "subtype-match" } },
+  { "id": "subtype-03", "output": "DiscordMessage", "input": "Notification", "expected": { "compatible": true, "reason": "subtype-match" } },
+  { "id": "subtype-04", "output": "ReviewReport", "input": "SecurityReport", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "subtype-05", "output": "Notification", "input": "SlackMessage", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "subtype-06", "output": "Notification", "input": "DiscordMessage", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "subtype-07", "output": "SlackMessage", "input": "DiscordMessage", "expected": { "compatible": false, "reason": "incompatible" } },
+
+  { "id": "wildcard-01", "output": "CodeDiff", "input": "Code*", "expected": { "compatible": true, "reason": "wildcard-match" } },
+  { "id": "wildcard-02", "output": "CodeSnippet", "input": "Code*", "expected": { "compatible": true, "reason": "wildcard-match" } },
+  { "id": "wildcard-03", "output": "ReviewReport", "input": "Review*", "expected": { "compatible": true, "reason": "wildcard-match" } },
+  { "id": "wildcard-04", "output": "SecurityReport", "input": "Security*", "expected": { "compatible": true, "reason": "wildcard-match" } },
+  { "id": "wildcard-05", "output": "SlackMessage", "input": "Slack*", "expected": { "compatible": true, "reason": "wildcard-match" } },
+  { "id": "wildcard-06", "output": "String", "input": "Code*", "expected": { "compatible": false, "reason": "incompatible" } },
+
+  { "id": "wildcard-fp-01", "output": "BarCode", "input": "Code*", "expected": { "compatible": false, "reason": "incompatible" }, "note": "KNOWN GAP: wildcard naively checks substring — BarCode contains Code but isn't a code type" },
+  { "id": "wildcard-fp-02", "output": "UniCodeHelper", "input": "Code*", "expected": { "compatible": false, "reason": "incompatible" }, "note": "KNOWN GAP: substring match false positive" },
+  { "id": "wildcard-fp-03", "output": "DecodedText", "input": "Code*", "expected": { "compatible": false, "reason": "incompatible" }, "note": "KNOWN GAP: substring match false positive — Decoded contains Code" },
+
+  { "id": "structural-01", "output": { "text": "string", "encoding": "string" }, "input": { "text": "string" }, "expected": { "compatible": true, "reason": "structural-match" } },
+  { "id": "structural-02", "output": { "data": "object", "schema": "object" }, "input": { "data": "object" }, "expected": { "compatible": true, "reason": "structural-match" } },
+  { "id": "structural-03", "output": { "findings": "array", "severity": "string", "summary": "string", "vulnerabilities": "array" }, "input": { "findings": "array", "severity": "string", "summary": "string" }, "expected": { "compatible": true, "reason": "structural-match" } },
+  { "id": "structural-04", "output": { "text": "string" }, "input": { "text": "string", "encoding": "string" }, "expected": { "compatible": false, "reason": "structural-mismatch" } },
+  { "id": "structural-05", "output": { "a": 1 }, "input": { "b": 2 }, "expected": { "compatible": false, "reason": "structural-mismatch" } },
+
+  { "id": "structural-vt-01", "output": { "text": 42, "encoding": true }, "input": { "text": "string" }, "expected": { "compatible": false, "reason": "structural-mismatch" }, "note": "KNOWN GAP: structural check only matches key names, ignores value types — 42 vs 'string' considered match" },
+  { "id": "structural-vt-02", "output": { "data": [1,2,3] }, "input": { "data": "string" }, "expected": { "compatible": false, "reason": "structural-mismatch" }, "note": "KNOWN GAP: array vs string on same key treated as compatible" },
+  { "id": "structural-vt-03", "output": { "count": 0, "items": null }, "input": { "count": "number", "items": "array" }, "expected": { "compatible": false, "reason": "structural-mismatch" }, "note": "KNOWN GAP: value type mismatch ignored" },
+
+  { "id": "nullsafe-01", "output": null, "input": "CodeDiff", "expected": { "compatible": false, "reason": "incompatible" }, "note": "KNOWN GAP: null output is treated as compatible (missing-type) — should arguably be incompatible when input is a concrete type" },
+  { "id": "nullsafe-02", "output": "CodeDiff", "input": null, "expected": { "compatible": false, "reason": "incompatible" }, "note": "KNOWN GAP: null input treated as compatible" },
+  { "id": "nullsafe-03", "output": null, "input": null, "expected": { "compatible": true, "reason": "missing-type" }, "note": "Both null is arguably compatible" },
+
+  { "id": "mixed-01", "output": "String", "input": { "text": "string" }, "expected": { "compatible": false, "reason": "type-kind-mismatch" } },
+  { "id": "mixed-02", "output": { "text": "string" }, "input": "String", "expected": { "compatible": false, "reason": "type-kind-mismatch" } },
+
+  { "id": "incompat-01", "output": "String", "input": "CodeDiff", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-02", "output": "Markdown", "input": "SecurityReport", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-03", "output": "FilePath", "input": "Notification", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-04", "output": "URL", "input": "TestResult", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-05", "output": "DataTable", "input": "SlackMessage", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-06", "output": "ImageRef", "input": "LintReport", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-07", "output": "OperationStatus", "input": "CodeSnippet", "expected": { "compatible": false, "reason": "incompatible" } },
+  { "id": "incompat-08", "output": "Summary", "input": "PullRequestRef", "expected": { "compatible": false, "reason": "incompatible" } }
+]

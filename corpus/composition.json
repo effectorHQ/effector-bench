@@ -1,0 +1,288 @@
+[
+  {
+    "id": "valid-chain-01",
+    "pipeline": "name: review-pipeline\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: git-fetch\n- id: review\n  effector: code-review",
+    "registry": {
+      "git-fetch": { "name": "git-fetch", "interface": { "input": "RepositoryRef", "output": "CodeDiff" } },
+      "code-review": { "name": "code-review", "interface": { "input": "CodeDiff", "output": "ReviewReport" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "valid-chain-02",
+    "pipeline": "name: notify-pipeline\nversion: 1.0.0\nsteps:\n- id: review\n  effector: code-review\n- id: notify\n  effector: slack-notify",
+    "registry": {
+      "code-review": { "name": "code-review", "interface": { "input": "CodeDiff", "output": "ReviewReport" } },
+      "slack-notify": { "name": "slack-notify", "interface": { "input": "ReviewReport", "output": "SlackMessage" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "valid-chain-03",
+    "pipeline": "name: subtype-chain\nversion: 1.0.0\nsteps:\n- id: scan\n  effector: security-scan\n- id: notify\n  effector: report-notifier",
+    "registry": {
+      "security-scan": { "name": "security-scan", "interface": { "input": "CodeSnippet", "output": "SecurityReport" } },
+      "report-notifier": { "name": "report-notifier", "interface": { "input": "ReviewReport", "output": "Notification" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 },
+    "note": "SecurityReport is subtype of ReviewReport"
+  },
+  {
+    "id": "valid-chain-04",
+    "pipeline": "name: alias-chain\nversion: 1.0.0\nsteps:\n- id: gen\n  effector: text-gen\n- id: format\n  effector: formatter",
+    "registry": {
+      "text-gen": { "name": "text-gen", "interface": { "input": "String", "output": "PlainText" } },
+      "formatter": { "name": "formatter", "interface": { "input": "String", "output": "Markdown" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 },
+    "note": "PlainText is alias of String"
+  },
+  {
+    "id": "valid-chain-05",
+    "pipeline": "name: three-step\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: git-fetch\n- id: review\n  effector: code-review\n- id: notify\n  effector: slack-notify",
+    "registry": {
+      "git-fetch": { "name": "git-fetch", "interface": { "input": "RepositoryRef", "output": "CodeDiff" } },
+      "code-review": { "name": "code-review", "interface": { "input": "CodeDiff", "output": "ReviewReport" } },
+      "slack-notify": { "name": "slack-notify", "interface": { "input": "ReviewReport", "output": "SlackMessage" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "valid-chain-06",
+    "pipeline": "name: single-step\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "valid-chain-07",
+    "pipeline": "name: wildcard-chain\nversion: 1.0.0\nsteps:\n- id: gen\n  effector: text-gen\n- id: process\n  effector: text-processor",
+    "registry": {
+      "text-gen": { "name": "text-gen", "interface": { "input": "String", "output": "Markdown" } },
+      "text-processor": { "name": "text-processor", "interface": { "input": "Markdown", "output": "String" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "valid-chain-08",
+    "pipeline": "name: no-interface\nversion: 1.0.0\nsteps:\n- id: step1\n  effector: tool-a\n- id: step2\n  effector: tool-b",
+    "registry": {
+      "tool-a": { "name": "tool-a", "interface": {} },
+      "tool-b": { "name": "tool-b", "interface": {} }
+    },
+    "expected": { "valid": true, "errorCount": 0 },
+    "note": "Missing types treated as compatible (missing-type)"
+  },
+  {
+    "id": "valid-chain-09",
+    "pipeline": "name: discord-chain\nversion: 1.0.0\nsteps:\n- id: scan\n  effector: security-scan\n- id: discord\n  effector: discord-alert",
+    "registry": {
+      "security-scan": { "name": "security-scan", "interface": { "input": "CodeSnippet", "output": "SecurityReport" } },
+      "discord-alert": { "name": "discord-alert", "interface": { "input": "ReviewReport", "output": "DiscordMessage" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 },
+    "note": "SecurityReport subtype of ReviewReport"
+  },
+  {
+    "id": "valid-chain-10",
+    "pipeline": "name: data-pipeline\nversion: 1.0.0\nsteps:\n- id: parse\n  effector: json-parser\n- id: analyze\n  effector: data-analyzer",
+    "registry": {
+      "json-parser": { "name": "json-parser", "interface": { "input": "String", "output": "JSON" } },
+      "data-analyzer": { "name": "data-analyzer", "interface": { "input": "JSON", "output": "Summary" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+
+  {
+    "id": "mismatch-01",
+    "pipeline": "name: broken-pipeline\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: git-fetch\n- id: notify\n  effector: slack-notify",
+    "registry": {
+      "git-fetch": { "name": "git-fetch", "interface": { "input": "RepositoryRef", "output": "CodeDiff" } },
+      "slack-notify": { "name": "slack-notify", "interface": { "input": "ReviewReport", "output": "SlackMessage" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "CodeDiff → ReviewReport: incompatible"
+  },
+  {
+    "id": "mismatch-02",
+    "pipeline": "name: broken-types\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter\n- id: deploy\n  effector: deployer",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "deployer": { "name": "deployer", "interface": { "input": "DeploymentStatus", "output": "OperationStatus" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "LintReport → DeploymentStatus: incompatible"
+  },
+  {
+    "id": "mismatch-03",
+    "pipeline": "name: reverse-subtype\nversion: 1.0.0\nsteps:\n- id: report\n  effector: reporter\n- id: security\n  effector: security-tool",
+    "registry": {
+      "reporter": { "name": "reporter", "interface": { "input": "String", "output": "ReviewReport" } },
+      "security-tool": { "name": "security-tool", "interface": { "input": "SecurityReport", "output": "String" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "ReviewReport (supertype) cannot satisfy SecurityReport (subtype) input"
+  },
+  {
+    "id": "mismatch-04",
+    "pipeline": "name: image-to-text\nversion: 1.0.0\nsteps:\n- id: img\n  effector: image-gen\n- id: parse\n  effector: code-parser",
+    "registry": {
+      "image-gen": { "name": "image-gen", "interface": { "input": "String", "output": "ImageRef" } },
+      "code-parser": { "name": "code-parser", "interface": { "input": "CodeSnippet", "output": "Summary" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 }
+  },
+  {
+    "id": "mismatch-05",
+    "pipeline": "name: multi-break\nversion: 1.0.0\nsteps:\n- id: a\n  effector: tool-a\n- id: b\n  effector: tool-b\n- id: c\n  effector: tool-c",
+    "registry": {
+      "tool-a": { "name": "tool-a", "interface": { "input": "String", "output": "Markdown" } },
+      "tool-b": { "name": "tool-b", "interface": { "input": "CodeDiff", "output": "TestResult" } },
+      "tool-c": { "name": "tool-c", "interface": { "input": "FilePath", "output": "String" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "Markdown → CodeDiff break at step b"
+  },
+  {
+    "id": "mismatch-06",
+    "pipeline": "name: missing-effector\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: git-fetch\n- id: process\n  effector: nonexistent-tool",
+    "registry": {
+      "git-fetch": { "name": "git-fetch", "interface": { "input": "RepositoryRef", "output": "CodeDiff" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "nonexistent-tool not in registry"
+  },
+  {
+    "id": "mismatch-07",
+    "pipeline": "name: notification-mismatch\nversion: 1.0.0\nsteps:\n- id: gen\n  effector: notifier\n- id: consume\n  effector: discord-only",
+    "registry": {
+      "notifier": { "name": "notifier", "interface": { "input": "String", "output": "Notification" } },
+      "discord-only": { "name": "discord-only", "interface": { "input": "DiscordMessage", "output": "String" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 },
+    "note": "Notification (supertype) cannot satisfy DiscordMessage (subtype)"
+  },
+  {
+    "id": "mismatch-08",
+    "pipeline": "name: table-mismatch\nversion: 1.0.0\nsteps:\n- id: gen\n  effector: table-gen\n- id: review\n  effector: code-review",
+    "registry": {
+      "table-gen": { "name": "table-gen", "interface": { "input": "String", "output": "DataTable" } },
+      "code-review": { "name": "code-review", "interface": { "input": "CodeDiff", "output": "ReviewReport" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 }
+  },
+  {
+    "id": "mismatch-09",
+    "pipeline": "name: url-to-deploy\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: url-fetcher\n- id: deploy\n  effector: deployer",
+    "registry": {
+      "url-fetcher": { "name": "url-fetcher", "interface": { "input": "String", "output": "URL" } },
+      "deployer": { "name": "deployer", "interface": { "input": "PatchSet", "output": "DeploymentStatus" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 }
+  },
+  {
+    "id": "mismatch-10",
+    "pipeline": "name: translate-mismatch\nversion: 1.0.0\nsteps:\n- id: translate\n  effector: translator\n- id: lint\n  effector: linter",
+    "registry": {
+      "translator": { "name": "translator", "interface": { "input": "String", "output": "TranslatedText" } },
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } }
+    },
+    "expected": { "valid": false, "minErrors": 1 }
+  },
+
+  {
+    "id": "parallel-01",
+    "pipeline": "name: parallel-ok\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter\n- id: test\n  effector: tester\n  parallel-with: lint",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "tester": { "name": "tester", "interface": { "input": "CodeSnippet", "output": "TestResult" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-02",
+    "pipeline": "name: parallel-review\nversion: 1.0.0\nsteps:\n- id: security\n  effector: security-scan\n- id: quality\n  effector: quality-check\n  parallel-with: security",
+    "registry": {
+      "security-scan": { "name": "security-scan", "interface": { "input": "CodeSnippet", "output": "SecurityReport" } },
+      "quality-check": { "name": "quality-check", "interface": { "input": "CodeSnippet", "output": "ReviewReport" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-03",
+    "pipeline": "name: parallel-after-chain\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: git-fetch\n- id: lint\n  effector: linter\n- id: test\n  effector: tester\n  parallel-with: lint",
+    "registry": {
+      "git-fetch": { "name": "git-fetch", "interface": { "input": "RepositoryRef", "output": "CodeSnippet" } },
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "tester": { "name": "tester", "interface": { "input": "CodeSnippet", "output": "TestResult" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-04",
+    "pipeline": "name: parallel-missing-ref\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter\n  parallel-with: nonexistent",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } }
+    },
+    "expected": { "valid": true, "warningCount": 1 },
+    "note": "Missing parallel ref is a warning not error"
+  },
+  {
+    "id": "parallel-05",
+    "pipeline": "name: parallel-triple\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter\n- id: test\n  effector: tester\n  parallel-with: lint\n- id: scan\n  effector: scanner\n  parallel-with: lint",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "tester": { "name": "tester", "interface": { "input": "CodeSnippet", "output": "TestResult" } },
+      "scanner": { "name": "scanner", "interface": { "input": "CodeSnippet", "output": "SecurityReport" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-06",
+    "pipeline": "name: parallel-then-chain\nversion: 1.0.0\nsteps:\n- id: lint\n  effector: linter\n- id: test\n  effector: tester\n  parallel-with: lint\n- id: report\n  effector: reporter",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "tester": { "name": "tester", "interface": { "input": "CodeSnippet", "output": "TestResult" } },
+      "reporter": { "name": "reporter", "interface": { "input": "TestResult", "output": "Markdown" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-07",
+    "pipeline": "name: parallel-single\nversion: 1.0.0\nsteps:\n- id: only\n  effector: linter",
+    "registry": {
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-08",
+    "pipeline": "name: parallel-deploy\nversion: 1.0.0\nsteps:\n- id: deploy-a\n  effector: deployer-a\n- id: deploy-b\n  effector: deployer-b\n  parallel-with: deploy-a",
+    "registry": {
+      "deployer-a": { "name": "deployer-a", "interface": { "input": "PatchSet", "output": "DeploymentStatus" } },
+      "deployer-b": { "name": "deployer-b", "interface": { "input": "PatchSet", "output": "DeploymentStatus" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-09",
+    "pipeline": "name: parallel-notify\nversion: 1.0.0\nsteps:\n- id: slack\n  effector: slack-notify\n- id: discord\n  effector: discord-notify\n  parallel-with: slack",
+    "registry": {
+      "slack-notify": { "name": "slack-notify", "interface": { "input": "ReviewReport", "output": "SlackMessage" } },
+      "discord-notify": { "name": "discord-notify", "interface": { "input": "ReviewReport", "output": "DiscordMessage" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  },
+  {
+    "id": "parallel-10",
+    "pipeline": "name: four-step-mixed\nversion: 1.0.0\nsteps:\n- id: fetch\n  effector: fetcher\n- id: lint\n  effector: linter\n- id: test\n  effector: tester\n  parallel-with: lint\n- id: report\n  effector: reporter",
+    "registry": {
+      "fetcher": { "name": "fetcher", "interface": { "input": "RepositoryRef", "output": "CodeSnippet" } },
+      "linter": { "name": "linter", "interface": { "input": "CodeSnippet", "output": "LintReport" } },
+      "tester": { "name": "tester", "interface": { "input": "CodeSnippet", "output": "TestResult" } },
+      "reporter": { "name": "reporter", "interface": { "input": "TestResult", "output": "Markdown" } }
+    },
+    "expected": { "valid": true, "errorCount": 0 }
+  }
+]

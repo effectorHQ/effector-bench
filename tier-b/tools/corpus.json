@@ -1,0 +1,250 @@
+{
+  "description": "10 representative MCP tool descriptions drawn from real-world function-calling patterns (BFCL-style categories). Each tool has a 'baseline' (raw JSON Schema as-is) and an 'effector' version (typed manifest compiled to MCP).",
+  "methodology": "Controlled variable: same tools, two schema representations. Measures schema quality, type specificity, and parameter constraint coverage.",
+  "tools": [
+    {
+      "id": "file-search",
+      "category": "filesystem",
+      "baseline": {
+        "name": "file_search",
+        "description": "Search for files matching a pattern",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pattern": { "type": "string" },
+            "directory": { "type": "string" },
+            "recursive": { "type": "boolean" }
+          },
+          "required": ["pattern"]
+        }
+      },
+      "effector": {
+        "name": "file-search",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Search for files matching a glob pattern in a directory tree",
+        "interface": { "input": "FilePath", "output": "JSON", "context": ["Repository"] },
+        "permissions": { "network": false, "filesystem": ["read"] }
+      }
+    },
+    {
+      "id": "code-review",
+      "category": "code-analysis",
+      "baseline": {
+        "name": "review_code",
+        "description": "Review code changes",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "diff": { "type": "string" },
+            "context": { "type": "string" }
+          },
+          "required": ["diff"]
+        }
+      },
+      "effector": {
+        "name": "code-review",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Automated code review with severity-ranked findings on a code diff",
+        "interface": { "input": "CodeDiff", "output": "ReviewReport", "context": ["Repository", "CodingStandards"] },
+        "permissions": { "network": false, "filesystem": ["read"] }
+      }
+    },
+    {
+      "id": "slack-notify",
+      "category": "communication",
+      "baseline": {
+        "name": "send_slack_message",
+        "description": "Send a message to Slack",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel": { "type": "string" },
+            "message": { "type": "string" },
+            "thread_ts": { "type": "string" }
+          },
+          "required": ["channel", "message"]
+        }
+      },
+      "effector": {
+        "name": "slack-notify",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Send a notification message to a Slack channel with optional threading",
+        "interface": { "input": "ReviewReport", "output": "SlackMessage", "context": ["SlackCredentials"] },
+        "permissions": { "network": true, "envRead": ["SLACK_TOKEN"] }
+      }
+    },
+    {
+      "id": "web-scraper",
+      "category": "web",
+      "baseline": {
+        "name": "scrape_url",
+        "description": "Scrape content from a URL",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "selector": { "type": "string" }
+          },
+          "required": ["url"]
+        }
+      },
+      "effector": {
+        "name": "web-scraper",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Extract structured content from a web page by URL with optional CSS selector filtering",
+        "interface": { "input": "URL", "output": "StructuredData" },
+        "permissions": { "network": true }
+      }
+    },
+    {
+      "id": "db-query",
+      "category": "database",
+      "baseline": {
+        "name": "query_database",
+        "description": "Run a SQL query",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "database": { "type": "string" }
+          },
+          "required": ["query"]
+        }
+      },
+      "effector": {
+        "name": "db-query",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Execute a read-only SQL query against a database and return tabular results",
+        "interface": { "input": "String", "output": "DataTable", "context": ["GenericAPIKey"] },
+        "permissions": { "network": true, "envRead": ["DATABASE_URL"] }
+      }
+    },
+    {
+      "id": "git-commit",
+      "category": "version-control",
+      "baseline": {
+        "name": "create_commit",
+        "description": "Create a git commit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string" },
+            "files": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["message"]
+        }
+      },
+      "effector": {
+        "name": "git-commit",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Stage specified files and create a git commit with a descriptive message",
+        "interface": { "input": "PatchSet", "output": "CommitRef", "context": ["Repository"] },
+        "permissions": { "network": false, "filesystem": ["read", "write"], "subprocess": true }
+      }
+    },
+    {
+      "id": "security-scan",
+      "category": "security",
+      "baseline": {
+        "name": "scan_security",
+        "description": "Scan code for security issues",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "severity": { "type": "string" }
+          },
+          "required": ["path"]
+        }
+      },
+      "effector": {
+        "name": "security-scan",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Static security analysis scanning for vulnerabilities, secrets, and dependency risks",
+        "interface": { "input": "CodeSnippet", "output": "SecurityReport", "context": ["Repository"] },
+        "permissions": { "network": false, "filesystem": ["read"] }
+      }
+    },
+    {
+      "id": "deploy-service",
+      "category": "infrastructure",
+      "baseline": {
+        "name": "deploy",
+        "description": "Deploy a service",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service": { "type": "string" },
+            "environment": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "required": ["service", "environment"]
+        }
+      },
+      "effector": {
+        "name": "deploy-service",
+        "version": "1.0.0",
+        "type": "workflow",
+        "description": "Deploy a containerized service to a target environment with version pinning and rollback support",
+        "interface": { "input": "PatchSet", "output": "DeploymentStatus", "context": ["AWSCredentials", "Docker"] },
+        "permissions": { "network": true, "subprocess": true, "envRead": ["AWS_REGION", "AWS_PROFILE"] }
+      }
+    },
+    {
+      "id": "translate-text",
+      "category": "nlp",
+      "baseline": {
+        "name": "translate",
+        "description": "Translate text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "target_language": { "type": "string" },
+            "source_language": { "type": "string" }
+          },
+          "required": ["text", "target_language"]
+        }
+      },
+      "effector": {
+        "name": "translate-text",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Translate text between languages with confidence scoring and source language detection",
+        "interface": { "input": "TextDocument", "output": "TranslatedText", "context": ["GenericAPIKey"] },
+        "permissions": { "network": true, "envRead": ["TRANSLATION_API_KEY"] }
+      }
+    },
+    {
+      "id": "summarize-doc",
+      "category": "nlp",
+      "baseline": {
+        "name": "summarize",
+        "description": "Summarize a document",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "max_length": { "type": "integer" }
+          },
+          "required": ["text"]
+        }
+      },
+      "effector": {
+        "name": "summarize-doc",
+        "version": "1.0.0",
+        "type": "skill",
+        "description": "Generate a concise summary with key points and confidence score from a text document",
+        "interface": { "input": "TextDocument", "output": "Summary" },
+        "permissions": { "network": false }
+      }
+    }
+  ]
+}

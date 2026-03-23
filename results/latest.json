@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2026-03-23T08:36:56.452Z",
+  "effectorVersion": "1.0.0",
+  "score": 87.7,
+  "totalCases": 57,
+  "totalPassed": 50,
+  "totalFailed": 7,
+  "totalMs": 1.1,
+  "categories": [
+    {
+      "name": "type-resolution",
+      "label": "Type Resolution",
+      "score": 87.7,
+      "cases": 57,
+      "passed": 50,
+      "failed": 7,
+      "timeMs": 1.1
+    }
+  ]
+}

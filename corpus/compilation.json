@@ -1,0 +1,122 @@
+[
+  {
+    "id": "mcp-01",
+    "manifest": { "name": "code-review", "version": "1.0.0", "type": "skill", "description": "Reviews code changes", "interface": { "input": "CodeDiff", "output": "ReviewReport" }, "permissions": { "network": false, "filesystem": ["read"] } },
+    "target": "mcp",
+    "expected": { "parseable": true, "hasFields": ["name", "description", "inputSchema"] }
+  },
+  {
+    "id": "mcp-02",
+    "manifest": { "name": "slack-notify", "version": "1.0.0", "type": "skill", "description": "Sends Slack notifications", "interface": { "input": "ReviewReport", "output": "SlackMessage" }, "permissions": { "network": true, "envRead": ["SLACK_TOKEN"] } },
+    "target": "mcp",
+    "expected": { "parseable": true, "hasFields": ["name", "description", "inputSchema"] }
+  },
+  {
+    "id": "mcp-03",
+    "manifest": { "name": "simple-tool", "version": "1.0.0", "type": "skill", "description": "A simple tool with no env vars" },
+    "target": "mcp",
+    "expected": { "parseable": true, "hasFields": ["name", "description", "inputSchema"] }
+  },
+  {
+    "id": "mcp-04",
+    "manifest": { "name": "@scope/my-tool", "version": "1.0.0", "type": "extension", "description": "Scoped tool name", "permissions": { "envRead": ["API_KEY", "SECRET"] } },
+    "target": "mcp",
+    "expected": { "parseable": true, "hasFields": ["name", "description", "inputSchema"], "nameNormalized": "scope_my_tool" }
+  },
+  {
+    "id": "mcp-05",
+    "manifest": { "name": "CamelCaseTool", "version": "1.0.0", "type": "skill", "description": "Tool with camelCase name" },
+    "target": "mcp",
+    "expected": { "parseable": true, "hasFields": ["name", "description", "inputSchema"], "nameNormalized": "camel_case_tool" }
+  },
+  {
+    "id": "openai-01",
+    "manifest": { "name": "code-review", "version": "1.0.0", "type": "skill", "description": "Reviews code changes", "interface": { "input": "CodeDiff", "output": "ReviewReport" } },
+    "target": "openai-agents",
+    "expected": { "parseable": true, "hasFields": ["type", "function"] }
+  },
+  {
+    "id": "openai-02",
+    "manifest": { "name": "data-processor", "version": "2.0.0", "type": "skill", "description": "Processes structured data", "permissions": { "envRead": ["DB_URL"] } },
+    "target": "openai-agents",
+    "expected": { "parseable": true, "hasFields": ["type", "function"] }
+  },
+  {
+    "id": "openai-03",
+    "manifest": { "name": "text-summarizer", "version": "1.0.0", "type": "skill", "description": "Summarizes long text documents", "skillContent": "# Text Summarizer\nSummarize the given text." },
+    "target": "openai-agents",
+    "expected": { "parseable": true, "hasFields": ["type", "function"] }
+  },
+  {
+    "id": "openai-04",
+    "manifest": { "name": "multi-env", "version": "1.0.0", "type": "skill", "description": "Tool with multiple env vars", "permissions": { "envRead": ["KEY_A", "KEY_B", "KEY_C"] } },
+    "target": "openai-agents",
+    "expected": { "parseable": true, "hasFields": ["type", "function"] }
+  },
+  {
+    "id": "openai-05",
+    "manifest": { "name": "no-perms", "version": "1.0.0", "type": "skill", "description": "Tool with no permissions at all" },
+    "target": "openai-agents",
+    "expected": { "parseable": true, "hasFields": ["type", "function"] }
+  },
+  {
+    "id": "langchain-01",
+    "manifest": { "name": "code-review", "version": "1.0.0", "type": "skill", "description": "Reviews code changes" },
+    "target": "langchain",
+    "expected": { "parseable": true, "containsStrings": ["class CodeReviewTool", "BaseTool", "name: str"] }
+  },
+  {
+    "id": "langchain-02",
+    "manifest": { "name": "slack-notify", "version": "1.0.0", "type": "skill", "description": "Sends notifications", "permissions": { "envRead": ["SLACK_TOKEN"] } },
+    "target": "langchain",
+    "expected": { "parseable": true, "containsStrings": ["class SlackNotifyTool", "BaseTool", "slack_token: str"] }
+  },
+  {
+    "id": "langchain-03",
+    "manifest": { "name": "data-tool", "version": "1.0.0", "type": "skill", "description": "Data processing", "skillContent": "# Data Tool\nProcess data." },
+    "target": "langchain",
+    "expected": { "parseable": true, "containsStrings": ["class DataToolTool", "BaseTool", "_run"] }
+  },
+  {
+    "id": "langchain-04",
+    "manifest": { "name": "my-tool", "version": "1.0.0", "type": "skill", "description": "Simple tool" },
+    "target": "langchain",
+    "expected": { "parseable": true, "containsStrings": ["class MyToolTool", "BaseTool"] }
+  },
+  {
+    "id": "langchain-05",
+    "manifest": { "name": "multi-word-tool-name", "version": "1.0.0", "type": "skill", "description": "Tool with long kebab name" },
+    "target": "langchain",
+    "expected": { "parseable": true, "containsStrings": ["class MultiWordToolNameTool", "BaseTool"] }
+  },
+  {
+    "id": "json-01",
+    "manifest": { "name": "code-review", "version": "1.0.0", "type": "skill", "description": "Reviews code" },
+    "target": "json",
+    "expected": { "parseable": true, "hasFields": ["name", "version", "type", "description"] }
+  },
+  {
+    "id": "json-02",
+    "manifest": { "name": "full-tool", "version": "2.0.0", "type": "workflow", "description": "Full featured tool", "interface": { "input": "CodeDiff", "output": "ReviewReport", "context": ["Repository"] }, "permissions": { "network": true, "filesystem": ["read", "write"] } },
+    "target": "json",
+    "expected": { "parseable": true, "hasFields": ["name", "version", "type", "description", "interface", "permissions"] }
+  },
+  {
+    "id": "json-03",
+    "manifest": { "name": "minimal", "version": "0.1.0", "type": "skill", "description": "Minimal manifest" },
+    "target": "json",
+    "expected": { "parseable": true, "hasFields": ["name", "version"] }
+  },
+  {
+    "id": "json-04",
+    "manifest": { "name": "with-skill", "version": "1.0.0", "type": "skill", "description": "Has skill content", "skillContent": "# Skill\nDo the thing." },
+    "target": "json",
+    "expected": { "parseable": true, "hasFields": ["name", "skillContent"] }
+  },
+  {
+    "id": "json-05",
+    "manifest": { "name": "empty-interface", "version": "1.0.0", "type": "skill", "description": "No interface defined" },
+    "target": "json",
+    "expected": { "parseable": true, "hasFields": ["name", "version"] }
+  }
+]

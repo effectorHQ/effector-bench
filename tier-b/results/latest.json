@@ -1,0 +1,615 @@
+{
+  "version": "2.0.0",
+  "timestamp": "2026-03-23T08:21:38.333Z",
+  "runtime_ms": 3.54,
+  "methodology": {
+    "description": "Controlled variable experiment: same 10 MCP tools scored under two schema representations. Evaluation dimensions grounded in published academic benchmarks.",
+    "control": "Raw MCP JSON Schema tool descriptions (baseline)",
+    "treatment": "effector.toml manifests compiled to enhanced MCP schemas via compile()",
+    "n": 10,
+    "dimensions": [
+      {
+        "id": "D1",
+        "name": "Function Selection Signal",
+        "class": "comparable",
+        "groundedIn": "BFCL",
+        "citation": "Gorilla Project, UC Berkeley",
+        "keyFinding": "Ambiguous descriptions cause 10-30% function misselection"
+      },
+      {
+        "id": "D2",
+        "name": "Parameter Extraction Signal",
+        "class": "comparable",
+        "groundedIn": "BFCL + API-Bank",
+        "citation": "Li et al., \"API-Bank\" (ACL 2023)",
+        "keyFinding": "Underspecified types cause 15-25% parameter extraction errors"
+      },
+      {
+        "id": "D3",
+        "name": "Multi-Step Composition Safety",
+        "class": "differential",
+        "groundedIn": "τ-bench + MCP-Bench",
+        "citation": "Yao et al., \"τ-bench\" (2024)",
+        "keyFinding": "Type errors cascade across multi-turn tool sequences"
+      },
+      {
+        "id": "D4",
+        "name": "Safety & Permission Coverage",
+        "class": "differential",
+        "groundedIn": "ToolSword + SafeToolBench",
+        "citation": "Ye et al., \"ToolSword\" (2024); Guo et al., \"SafeToolBench\" (2024)",
+        "keyFinding": "Tools without permission models enable 6 attack categories"
+      },
+      {
+        "id": "D5",
+        "name": "Schema Completeness",
+        "class": "comparable",
+        "groundedIn": "MCPToolBench++ + Nexus",
+        "citation": "MCPToolBench++ (arxiv/2508.07575); Srinivasan et al., \"NexusRaven\" (2023)",
+        "keyFinding": "Schema completeness correlates with invocation accuracy"
+      }
+    ]
+  },
+  "references": [
+    {
+      "id": "BFCL",
+      "title": "Berkeley Function Calling Leaderboard",
+      "authors": "Gorilla Project, UC Berkeley",
+      "url": "gorilla.cs.berkeley.edu/leaderboard.html",
+      "relevance": "Function selection + parameter extraction accuracy"
+    },
+    {
+      "id": "tau-bench",
+      "title": "τ-bench: A Benchmark for Tool-Agent-User Interaction",
+      "authors": "Yao et al.",
+      "year": 2024,
+      "relevance": "Multi-step composition error cascade"
+    },
+    {
+      "id": "ToolSword",
+      "title": "ToolSword: Unveiling Safety Issues of LLMs in Tool Learning",
+      "authors": "Ye et al.",
+      "year": 2024,
+      "relevance": "6 safety risk categories for tool use"
+    },
+    {
+      "id": "SafeToolBench",
+      "title": "SafeToolBench: Evaluating Safety of Tool-Augmented LLMs",
+      "authors": "Guo et al.",
+      "year": 2024,
+      "relevance": "Permission model prevents unsafe tool execution"
+    },
+    {
+      "id": "MCPToolBench++",
+      "title": "MCPToolBench++",
+      "url": "arxiv.org/abs/2508.07575",
+      "relevance": "Schema completeness → invocation accuracy correlation"
+    },
+    {
+      "id": "API-Bank",
+      "title": "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs",
+      "authors": "Li et al.",
+      "venue": "ACL 2023",
+      "relevance": "Parameter type constraints improve API call accuracy"
+    },
+    {
+      "id": "Nexus",
+      "title": "NexusRaven: Function Calling Benchmark",
+      "authors": "Srinivasan et al.",
+      "year": 2023,
+      "relevance": "Schema metadata density → function call accuracy"
+    },
+    {
+      "id": "MCP-Bench",
+      "title": "MCP-Bench",
+      "url": "github.com/modelcontextprotocol/mcp-bench",
+      "relevance": "MCP tool chain failure at composition boundaries"
+    },
+    {
+      "id": "ToolBench",
+      "title": "ToolBench: Tool Learning Benchmark",
+      "authors": "Qin et al.",
+      "year": 2023,
+      "relevance": "Real-world API selection and sequencing"
+    },
+    {
+      "id": "MCP-AgentBench",
+      "title": "MCP-AgentBench",
+      "url": "arxiv.org/abs/2509.09734",
+      "relevance": "Real-world MCP task completion"
+    },
+    {
+      "id": "Seal-Tools",
+      "title": "Seal-Tools: Self-Instruct Tool Learning",
+      "year": 2024,
+      "relevance": "Tool learning evaluation framework"
+    }
+  ],
+  "aggregated": {
+    "functionSelection": {
+      "baseline": {
+        "mean": 10,
+        "stdDev": 3.6,
+        "median": 10
+      },
+      "effector": {
+        "mean": 38,
+        "stdDev": 7.4,
+        "median": 40
+      },
+      "delta": 28
+    },
+    "parameterExtraction": {
+      "baseline": {
+        "mean": 37,
+        "stdDev": 12.6,
+        "median": 35
+      },
+      "effector": {
+        "mean": 23,
+        "stdDev": 24.3,
+        "median": 3
+      },
+      "delta": -14
+    },
+    "compositionSafety": {
+      "baseline": {
+        "mean": 13,
+        "stdDev": 2.9,
+        "median": 15
+      },
+      "effector": {
+        "mean": 88,
+        "stdDev": 5.1,
+        "median": 88
+      },
+      "delta": 75
+    },
+    "safetyPermissions": {
+      "baseline": {
+        "mean": 0,
+        "stdDev": 0,
+        "median": 0
+      },
+      "effector": {
+        "mean": 53,
+        "stdDev": 18.6,
+        "median": 57
+      },
+      "delta": 53
+    },
+    "schemaCompleteness": {
+      "baseline": {
+        "mean": 29,
+        "stdDev": 4.4,
+        "median": 27
+      },
+      "effector": {
+        "mean": 66,
+        "stdDev": 13.5,
+        "median": 68
+      },
+      "delta": 37
+    },
+    "comparableAvg": {
+      "baseline": {
+        "mean": 25,
+        "stdDev": 5.8,
+        "median": 24
+      },
+      "effector": {
+        "mean": 43,
+        "stdDev": 11.7,
+        "median": 37
+      },
+      "delta": 18
+    },
+    "differentialAvg": {
+      "baseline": {
+        "mean": 7,
+        "stdDev": 1.7,
+        "median": 8
+      },
+      "effector": {
+        "mean": 71,
+        "stdDev": 11.4,
+        "median": 73
+      },
+      "delta": 64
+    },
+    "overall": {
+      "baseline": {
+        "mean": 18,
+        "stdDev": 3.5,
+        "median": 17
+      },
+      "effector": {
+        "mean": 54,
+        "stdDev": 9,
+        "median": 55
+      },
+      "delta": 36
+    }
+  },
+  "regressions": {
+    "count": 6,
+    "rootCause": "compile() generates inputSchema.properties only for envRead variables. Interface types stored in _interface metadata but not expanded to JSON Schema parameters.",
+    "impact": "D2 (Parameter Extraction Signal) regresses for 6/10 tools lacking envRead declarations.",
+    "recommendation": "Expand compiler to derive parameter schemas from type catalog entries.",
+    "details": [
+      {
+        "tool": "file-search",
+        "dimension": "parameterExtraction",
+        "baseline": 56,
+        "effector": 3,
+        "delta": -53
+      },
+      {
+        "tool": "code-review",
+        "dimension": "parameterExtraction",
+        "baseline": 25,
+        "effector": 3,
+        "delta": -22
+      },
+      {
+        "tool": "web-scraper",
+        "dimension": "parameterExtraction",
+        "baseline": 25,
+        "effector": 3,
+        "delta": -22
+      },
+      {
+        "tool": "git-commit",
+        "dimension": "parameterExtraction",
+        "baseline": 55,
+        "effector": 3,
+        "delta": -52
+      },
+      {
+        "tool": "security-scan",
+        "dimension": "parameterExtraction",
+        "baseline": 25,
+        "effector": 3,
+        "delta": -22
+      },
+      {
+        "tool": "summarize-doc",
+        "dimension": "parameterExtraction",
+        "baseline": 55,
+        "effector": 3,
+        "delta": -52
+      }
+    ]
+  },
+  "tools": [
+    {
+      "id": "file-search",
+      "category": "filesystem",
+      "baseline": {
+        "functionSelection": 16,
+        "parameterExtraction": 56,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 38,
+        "comparableAvg": 37,
+        "differentialAvg": 8,
+        "overall": 25
+      },
+      "effector": {
+        "functionSelection": 27,
+        "parameterExtraction": 3,
+        "compositionSafety": 88,
+        "safetyPermissions": 65,
+        "schemaCompleteness": 59,
+        "comparableAvg": 30,
+        "differentialAvg": 77,
+        "overall": 48
+      },
+      "delta": 23
+    },
+    {
+      "id": "code-review",
+      "category": "code-analysis",
+      "baseline": {
+        "functionSelection": 6,
+        "parameterExtraction": 25,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 25,
+        "comparableAvg": 19,
+        "differentialAvg": 8,
+        "overall": 14
+      },
+      "effector": {
+        "functionSelection": 41,
+        "parameterExtraction": 3,
+        "compositionSafety": 96,
+        "safetyPermissions": 65,
+        "schemaCompleteness": 66,
+        "comparableAvg": 37,
+        "differentialAvg": 81,
+        "overall": 54
+      },
+      "delta": 40
+    },
+    {
+      "id": "slack-notify",
+      "category": "communication",
+      "baseline": {
+        "functionSelection": 13,
+        "parameterExtraction": 35,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 34,
+        "comparableAvg": 27,
+        "differentialAvg": 8,
+        "overall": 19
+      },
+      "effector": {
+        "functionSelection": 34,
+        "parameterExtraction": 51,
+        "compositionSafety": 88,
+        "safetyPermissions": 48,
+        "schemaCompleteness": 69,
+        "comparableAvg": 51,
+        "differentialAvg": 68,
+        "overall": 58
+      },
+      "delta": 39
+    },
+    {
+      "id": "web-scraper",
+      "category": "web",
+      "baseline": {
+        "functionSelection": 13,
+        "parameterExtraction": 25,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 25,
+        "comparableAvg": 21,
+        "differentialAvg": 8,
+        "overall": 16
+      },
+      "effector": {
+        "functionSelection": 52,
+        "parameterExtraction": 3,
+        "compositionSafety": 80,
+        "safetyPermissions": 18,
+        "schemaCompleteness": 50,
+        "comparableAvg": 35,
+        "differentialAvg": 49,
+        "overall": 41
+      },
+      "delta": 25
+    },
+    {
+      "id": "db-query",
+      "category": "database",
+      "baseline": {
+        "functionSelection": 10,
+        "parameterExtraction": 25,
+        "compositionSafety": 8,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 25,
+        "comparableAvg": 20,
+        "differentialAvg": 4,
+        "overall": 14
+      },
+      "effector": {
+        "functionSelection": 42,
+        "parameterExtraction": 51,
+        "compositionSafety": 88,
+        "safetyPermissions": 48,
+        "schemaCompleteness": 72,
+        "comparableAvg": 55,
+        "differentialAvg": 68,
+        "overall": 60
+      },
+      "delta": 46
+    },
+    {
+      "id": "git-commit",
+      "category": "version-control",
+      "baseline": {
+        "functionSelection": 13,
+        "parameterExtraction": 55,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 31,
+        "comparableAvg": 33,
+        "differentialAvg": 8,
+        "overall": 23
+      },
+      "effector": {
+        "functionSelection": 38,
+        "parameterExtraction": 3,
+        "compositionSafety": 88,
+        "safetyPermissions": 80,
+        "schemaCompleteness": 69,
+        "comparableAvg": 37,
+        "differentialAvg": 84,
+        "overall": 56
+      },
+      "delta": 33
+    },
+    {
+      "id": "security-scan",
+      "category": "security",
+      "baseline": {
+        "functionSelection": 10,
+        "parameterExtraction": 25,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 25,
+        "comparableAvg": 20,
+        "differentialAvg": 8,
+        "overall": 15
+      },
+      "effector": {
+        "functionSelection": 27,
+        "parameterExtraction": 3,
+        "compositionSafety": 88,
+        "safetyPermissions": 65,
+        "schemaCompleteness": 59,
+        "comparableAvg": 30,
+        "differentialAvg": 77,
+        "overall": 48
+      },
+      "delta": 33
+    },
+    {
+      "id": "deploy-service",
+      "category": "infrastructure",
+      "baseline": {
+        "functionSelection": 6,
+        "parameterExtraction": 35,
+        "compositionSafety": 15,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 31,
+        "comparableAvg": 24,
+        "differentialAvg": 8,
+        "overall": 17
+      },
+      "effector": {
+        "functionSelection": 41,
+        "parameterExtraction": 57,
+        "compositionSafety": 96,
+        "safetyPermissions": 68,
+        "schemaCompleteness": 100,
+        "comparableAvg": 66,
+        "differentialAvg": 82,
+        "overall": 72
+      },
+      "delta": 55
+    },
+    {
+      "id": "translate-text",
+      "category": "nlp",
+      "baseline": {
+        "functionSelection": 6,
+        "parameterExtraction": 35,
+        "compositionSafety": 10,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 28,
+        "comparableAvg": 23,
+        "differentialAvg": 5,
+        "overall": 16
+      },
+      "effector": {
+        "functionSelection": 34,
+        "parameterExtraction": 51,
+        "compositionSafety": 88,
+        "safetyPermissions": 48,
+        "schemaCompleteness": 69,
+        "comparableAvg": 51,
+        "differentialAvg": 68,
+        "overall": 58
+      },
+      "delta": 42
+    },
+    {
+      "id": "summarize-doc",
+      "category": "nlp",
+      "baseline": {
+        "functionSelection": 6,
+        "parameterExtraction": 55,
+        "compositionSafety": 8,
+        "safetyPermissions": 0,
+        "schemaCompleteness": 25,
+        "comparableAvg": 29,
+        "differentialAvg": 4,
+        "overall": 19
+      },
+      "effector": {
+        "functionSelection": 45,
+        "parameterExtraction": 3,
+        "compositionSafety": 80,
+        "safetyPermissions": 25,
+        "schemaCompleteness": 50,
+        "comparableAvg": 33,
+        "differentialAvg": 53,
+        "overall": 41
+      },
+      "delta": 22
+    }
+  ],
+  "compositionChains": {
+    "total": 8,
+    "passed": 8,
+    "note": "Baseline scores 0/8 — MCP spec has no typed interface model",
+    "results": [
+      {
+        "name": "Review → Notify",
+        "from": "code-review",
+        "to": "slack-notify",
+        "expected": true,
+        "actual": true,
+        "reason": "exact-match",
+        "correct": true
+      },
+      {
+        "name": "Scan → Notify (subtype)",
+        "from": "security-scan",
+        "to": "slack-notify",
+        "expected": true,
+        "actual": true,
+        "reason": "subtype-match",
+        "correct": true
+      },
+      {
+        "name": "Review → Summarize",
+        "from": "code-review",
+        "to": "summarize-doc",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      },
+      {
+        "name": "Search → Deploy",
+        "from": "file-search",
+        "to": "deploy-service",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      },
+      {
+        "name": "Query → Summarize",
+        "from": "db-query",
+        "to": "summarize-doc",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      },
+      {
+        "name": "Scrape → Translate",
+        "from": "web-scraper",
+        "to": "translate-text",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      },
+      {
+        "name": "Translate → Deploy",
+        "from": "translate-text",
+        "to": "deploy-service",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      },
+      {
+        "name": "Commit → Scrape",
+        "from": "git-commit",
+        "to": "web-scraper",
+        "expected": false,
+        "actual": false,
+        "reason": "incompatible",
+        "correct": true
+      }
+    ]
+  }
+}
