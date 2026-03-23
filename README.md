@@ -166,4 +166,4 @@ Controlled variable experiment: same 10 MCP tools, two schema representations. E
 
 ## License
 
-MIT
+This project is currently licensed under the Apache 2.0 License 。

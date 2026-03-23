@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "description": "Two-tier benchmark suite for the effector toolchain. Tier A: 179 deterministic accuracy tests. Tier B: controlled variable schema quality comparison grounded in BFCL, τ-bench, ToolSword, MCPToolBench++, and API-Bank.",
+  "license": "Apache-2.0",
   "scripts": {
     "bench": "node benchmark.js",
     "bench:verbose": "node benchmark.js --verbose",
