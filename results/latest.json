@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0",
-  "timestamp": "2026-03-23T08:36:56.452Z",
+  "version": "2.0.0",
+  "timestamp": "2026-03-23T13:13:29.937Z",
   "effectorVersion": "1.0.0",
-  "score": 87.7,
-  "totalCases": 57,
-  "totalPassed": 50,
-  "totalFailed": 7,
-  "totalMs": 1.1,
+  "score": 89.9,
+  "totalCases": 179,
+  "totalPassed": 161,
+  "totalFailed": 18,
+  "totalMs": 3.32,
   "categories": [
     {
       "name": "type-resolution",
@@ -15,7 +15,44 @@
       "cases": 57,
       "passed": 50,
       "failed": 7,
-      "timeMs": 1.1
+      "timeMs": 0.43
+    },
+    {
+      "name": "validation",
+      "label": "Manifest Validation",
+      "score": 89.7,
+      "cases": 29,
+      "passed": 26,
+      "failed": 3,
+      "timeMs": 0.32
+    },
+    {
+      "name": "composition",
+      "label": "Composition Safety",
+      "score": 100,
+      "cases": 30,
+      "passed": 30,
+      "failed": 0,
+      "timeMs": 0.37
+    },
+    {
+      "name": "security",
+      "label": "Security Detection",
+      "score": 81.4,
+      "cases": 43,
+      "passed": 35,
+      "failed": 8,
+      "timeMs": 1.29,
+      "f1": 0.84
+    },
+    {
+      "name": "compilation",
+      "label": "Compilation",
+      "score": 100,
+      "cases": 20,
+      "passed": 20,
+      "failed": 0,
+      "timeMs": 0.92
     }
   ]
 }

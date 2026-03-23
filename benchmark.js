@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * effector Toolchain Benchmark
+ * effector Tier A — Toolchain Accuracy Benchmark
  *
- * 200 test cases across 5 verification categories.
- * Measures accuracy and performance of the effector toolchain.
+ * 179 deterministic test cases across 5 verification categories.
+ * Measures correctness of effector's type checker, validator, compositor,
+ * security scanner, and cross-runtime compiler. Includes adversarial cases
+ * that expose known toolchain limitations.
  *
  * Usage:
  *   node benchmark.js              # Run all categories
@@ -430,7 +432,7 @@ if (filteredCategories.length === 0) {
 
 console.log('');
 console.log('  ╔══════════════════════════════════════════════╗');
-console.log('  ║    effector Toolchain Benchmark v1.0.0       ║');
+console.log('  ║    effector Tier A — Toolchain Accuracy v2.0  ║');
 console.log('  ╚══════════════════════════════════════════════╝');
 console.log('');
 
@@ -509,7 +511,7 @@ console.log('');
 // ─── Write results ──────────────────────────────────────────
 
 const output = {
-  version: '1.0.0',
+  version: '2.0.0',
   timestamp: new Date().toISOString(),
   effectorVersion: '1.0.0',
   score: parseFloat(overallScore),

@@ -1,106 +1,231 @@
-# effector Benchmark Methodology
+# Benchmark Methodology
 
-## Overview
-
-Two-tier benchmark system measuring effector toolchain correctness and schema quality improvement.
-
-## Tier A — Toolchain Accuracy (Internal, Deterministic)
-
-**What it measures**: Does effector's toolchain (type checker, validator, composer, security scanner, compiler) produce correct results?
-
-**Methodology**: 179 test cases across 5 categories, each with expected outcomes including adversarial edge cases that expose known toolchain limitations.
-
-| Category | Cases | Score | What It Tests |
-|---|---|---|---|
-| Type Resolution | 57 | 87.7% | 6-tier type compatibility (exact, alias, subtype, wildcard, structural, incompatible) |
-| Manifest Validation | 29 | 89.7% | Schema accept/reject with edge cases |
-| Composition Safety | 30 | 100% | Pipeline type checking across tool chains |
-| Security Detection | 43 | 81.4% | Prompt injection, data exfil, permission creep, obfuscation detection |
-| Compilation | 20 | 100% | Cross-runtime output correctness (MCP, OpenAI, LangChain, JSON) |
-
-**Overall: 89.9% (161/179 cases, 3.2ms)**
-
-### Known Limitations (Why Not 100%)
-
-- **Type checker**: Wildcard matching uses naive prefix check — `BarCode` matches `Code*` incorrectly. Structural subtyping ignores value types. Null/undefined treated as compatible.
-- **Validator**: Does not reject unknown top-level fields. Does not check interface type names against catalog.
-- **Security scanner**: Regex-based — misses leetspeak evasion, WebSocket/sendBeacon exfiltration, produces false positives on code comments.
-
-All known gaps are annotated in corpus files with `"note": "KNOWN GAP: ..."`.
+Detailed methodology for the two-tier effector benchmark suite.
 
 ---
 
-## Tier B — Schema Quality Comparison (Controlled Variable)
+## Tier A — Toolchain Accuracy
 
-**What it measures**: Does compiling an effector.toml manifest to MCP produce a higher-quality schema than hand-written MCP JSON Schema?
+### What It Measures
 
-**Experimental design**: Same 10 MCP tools, two representations:
-- **Control**: Raw MCP JSON Schema (baseline)
-- **Treatment**: effector.toml manifest compiled via `compile(def, 'mcp')`
+Does effector's toolchain (type checker, validator, compositor, security scanner, compiler) produce correct results on adversarial inputs?
 
-### Metric Classes
+### Experimental Setup
 
-We separate metrics into two classes to avoid conflating fair comparisons with structural advantages:
+- **179 test cases** across 5 categories
+- Each case has an `expected` outcome (pass/fail/compatible/incompatible)
+- Adversarial cases deliberately target known toolchain limitations
+- All gaps annotated with `"note": "KNOWN GAP: ..."` in corpus files
+- **Deterministic**: no randomness, no API calls, no LLM
 
-**Comparable Metrics (M1-M3)** — Both formats CAN express these:
-| Metric | Baseline μ±σ | Effector μ±σ | Δ |
+### Categories
+
+| Category | Cases | Score | Measures |
 |---|---|---|---|
-| M1: Description Specificity | 9 ± 3.6 | 34 ± 7.4 | +25 |
-| M2: Parameter Constraints | 41 ± 11.5 | 37 ± 38.6 | **-4** |
-| M3: Schema Info Density | 36 ± 5.3 | 80 ± 9.5 | +44 |
-| **Comparable Overall** | **29 ± 5** | **50 ± 16.2** | **+21** |
+| Type Resolution | 57 | 87.7% | 6-tier type compatibility engine |
+| Manifest Validation | 29 | 89.7% | Schema validation accept/reject correctness |
+| Composition Safety | 30 | 100% | Pipeline type checking across tool chains |
+| Security Detection | 43 | 81.4% | 5 security rules: injection, exfil, creep, obfuscation, mismatch |
+| Compilation | 20 | 100% | Cross-runtime output: MCP, OpenAI Agents, LangChain, JSON |
+| **Overall** | **179** | **89.9%** | **161 passed, 18 known gaps, 2.9ms** |
 
-**Differential Metrics (M4-M6)** — Capabilities only effector adds:
-| Metric | Baseline μ±σ | Effector μ±σ | Δ |
+### Type Resolution Breakdown (57 cases)
+
+| Tier | Cases | Description |
+|---|---|---|
+| Exact match | 10 | `CodeDiff` = `CodeDiff` |
+| Alias match | 10 | `Diff` → `CodeDiff` (catalog alias) |
+| Subtype match | 7 | `SecurityReport` ⊂ `ReviewReport` (+ reverse-subtype failures) |
+| Wildcard match | 9 | `Code*` matches `CodeDiff`, `CodeSnippet` (+ 3 false positive tests) |
+| Structural match | 8 | Field overlap checking (+ 3 value-type blindness tests) |
+| Null safety | 3 | Null/undefined compatibility gaps |
+| Mixed type | 2 | Cross-tier edge cases |
+| Incompatible | 8 | Correctly rejected incompatible pairs |
+
+### Security Detection Breakdown (43 cases)
+
+| Rule | Positives | Negatives | False Negatives | False Positives |
+|---|---|---|---|---|
+| Prompt injection | 5 | 4 | 4 (leetspeak, spacing) | — |
+| Data exfiltration | 4 | 2 | 3 (WebSocket, sendBeacon, pixel) | — |
+| Permission creep | 4 | 3 | — | 3 (code comments) |
+| Obfuscation | 3 | 2 | — | — |
+| Permission-interface mismatch | 3 | 3 | — | — |
+
+Security F1 score: **0.84**
+
+### Known Limitations
+
+| Component | Gap | Impact |
+|---|---|---|
+| Type checker | Wildcard uses naive substring match | `BarCode` matches `Code*` (false positive) |
+| Type checker | Structural subtyping ignores value types | `{name: String}` ≈ `{name: Integer}` |
+| Type checker | Null/undefined treated as compatible | Silent type holes |
+| Validator | No unknown-field rejection | Typos like `interafce` pass silently |
+| Validator | No interface type checking against catalog | Invalid types accepted |
+| Security | Regex-based detection | Misses leetspeak, WebSocket exfil |
+| Security | No context-aware analysis | False positives on code comments |
+
+---
+
+## Tier B — Schema Quality Comparison
+
+### What It Measures
+
+Does compiling an `effector.toml` manifest to MCP produce a higher-quality schema than hand-written baseline MCP JSON Schema?
+
+### Experimental Design
+
+**Controlled variable experiment:**
+- **Control**: 10 raw MCP JSON Schema tool descriptions (baseline)
+- **Treatment**: Same 10 tools with effector.toml manifests compiled via `compile(def, 'mcp')`
+- **N = 10 tools x 5 dimensions = 50 measurements per condition**
+
+### Tool Corpus
+
+10 tools spanning 8 categories, chosen for diversity:
+
+| Tool | Category | Interface (effector) |
+|---|---|---|
+| file-search | filesystem | FilePath → JSON |
+| code-review | code-analysis | CodeDiff → ReviewReport |
+| slack-notify | communication | ReviewReport → SlackMessage |
+| web-scraper | web | URL → StructuredData |
+| db-query | database | String → DataTable |
+| git-commit | version-control | PatchSet → CommitRef |
+| security-scan | security | CodeSnippet → SecurityReport |
+| deploy-service | infrastructure | PatchSet → DeploymentStatus |
+| translate-text | nlp | TextDocument → TranslatedText |
+| summarize-doc | nlp | TextDocument → Summary |
+
+### Evaluation Dimensions
+
+Each dimension is grounded in findings from established academic benchmarks. We separate **Comparable** dimensions (both formats can express) from **Differential** dimensions (only effector can express) to avoid conflating fair comparisons with structural advantages.
+
+#### D1: Function Selection Signal (Comparable)
+
+- **Grounded in**: BFCL (Gorilla Project, UC Berkeley)
+- **Finding**: Ambiguous tool descriptions cause 10-30% function misselection in LLMs
+- **Measures**: Description disambiguation quality — word count, domain terms, action verbs, output specification
+
+#### D2: Parameter Extraction Signal (Comparable)
+
+- **Grounded in**: BFCL + API-Bank (Li et al., ACL 2023)
+- **Finding**: Underspecified parameter types cause 15-25% extraction errors
+- **Measures**: Required field declarations, type annotations beyond `string`, enum usage, parameter descriptions
+
+#### D3: Multi-Step Composition Safety (Differential)
+
+- **Grounded in**: τ-bench (Yao et al., 2024) + MCP-Bench
+- **Finding**: Type errors cascade across multi-turn tool sequences; composition fails at boundaries
+- **Measures**: Typed I/O interface coverage, static composability verification, context declarations
+- **Note**: Structurally near-zero for baseline (MCP spec has no typed interface model)
+
+#### D4: Safety & Permission Coverage (Differential)
+
+- **Grounded in**: ToolSword (Ye et al., 2024) + SafeToolBench (Guo et al., 2024)
+- **Finding**: Tools without permission models enable 6 attack categories (harmful queries, risky args, etc.)
+- **Measures**: Explicit permission declarations (network, filesystem, subprocess, envRead)
+- **Note**: Structurally zero for baseline (MCP spec has no permission model)
+
+#### D5: Schema Completeness (Comparable)
+
+- **Grounded in**: MCPToolBench++ + Nexus (Srinivasan et al., 2023)
+- **Finding**: Schema completeness correlates with invocation accuracy
+- **Measures**: Total structured information bits — fields, types, constraints, metadata, interface info
+
+### Results
+
+#### Comparable Dimensions (fair head-to-head)
+
+| Dimension | Baseline (μ ± σ) | Effector (μ ± σ) | Δ |
 |---|---|---|---|
-| M4: Interface Type Coverage | 22 ± 5 | 75 ± 9.5 | +53 |
-| M5: Permission Explicitness | 0 ± 0 | 47 ± 17.1 | +47 |
-| M6: Composition Readiness | 0 ± 0 | 97 ± 6 | +97 |
-| **Differential Overall** | **7 ± 1.6** | **73 ± 9.6** | **+66** |
+| D1 Function Selection | 10 ± 3.6 | 38 ± 7.4 | **+28** |
+| D2 Parameter Extraction | 37 ± 12.6 | 23 ± 24.3 | **-14** |
+| D5 Schema Completeness | 29 ± 4.4 | 66 ± 13.5 | **+37** |
+| **Comparable Average** | **25 ± 5.8** | **43 ± 11.7** | **+18** |
 
-**Combined Overall: 18 → 62 (Δ+44)**
+#### Differential Dimensions (capabilities effector adds)
+
+| Dimension | Baseline (μ ± σ) | Effector (μ ± σ) | Δ |
+|---|---|---|---|
+| D3 Composition Safety | 13 ± 2.9 | 88 ± 5.1 | **+75** |
+| D4 Safety & Permissions | 0 ± 0 | 53 ± 18.6 | **+53** |
+| **Differential Average** | **7 ± 1.7** | **71 ± 11.4** | **+64** |
+
+#### Combined
+
+| | Baseline | Effector | Δ |
+|---|---|---|---|
+| **Combined Overall** | **18 ± 3.5** | **54 ± 9.0** | **+36** |
 
 ### Regression Analysis
 
-6 of 10 tools show **parameter constraint regression** (effector scores lower). Root cause: `compile()` generates `inputSchema.properties` only for `envRead` environment variables. Tools without `envRead` produce empty parameter schemas, losing the hand-written parameter definitions the baseline has.
+**6/10 tools** show D2 (Parameter Extraction) regression:
 
-This is a real compiler limitation, not a measurement artifact. The fix is to expand type catalog entries into JSON Schema properties during compilation.
+| Tool | Baseline | Effector | Δ |
+|---|---|---|---|
+| file-search | 56 | 3 | -53 |
+| code-review | 25 | 3 | -22 |
+| web-scraper | 25 | 3 | -22 |
+| git-commit | 55 | 3 | -52 |
+| security-scan | 25 | 3 | -22 |
+| summarize-doc | 55 | 3 | -52 |
+
+**Root cause**: `compile()` generates `inputSchema.properties` only for `envRead` environment variables. Interface types are stored in `_interface` metadata but not expanded to JSON Schema parameter definitions. Tools without `envRead` produce nearly-empty parameter schemas.
+
+**Impact**: D2 score drops from μ=37 (baseline) to μ=23 (effector). High variance (σ=24.3) reflects the bimodal distribution — tools with envRead score well, tools without score near zero.
+
+**Recommendation**: Expand the compiler to derive parameter schemas from type catalog entries. This would eliminate the regression and add an estimated +20-30 to the comparable average.
 
 ### Composition Chain Verification
 
-8/8 chains verified correct. Tests both valid compositions (subtype matching) and correctly-rejected incompatible chains:
+8 chains tested, 8/8 correct:
 
-| Chain | Expected | Result |
-|---|---|---|
-| code-review → slack-notify | Compatible (exact) | ✓ |
-| security-scan → slack-notify | Compatible (subtype) | ✓ |
-| code-review → summarize-doc | Incompatible | ✓ |
-| file-search → deploy-service | Incompatible | ✓ |
-| db-query → summarize-doc | Incompatible | ✓ |
-| web-scraper → translate-text | Incompatible | ✓ |
-| translate-text → deploy-service | Incompatible | ✓ |
-| git-commit → web-scraper | Incompatible | ✓ |
+| Chain | Expected | Actual | Mechanism |
+|---|---|---|---|
+| code-review → slack-notify | Compatible | Compatible | ReviewReport exact-match |
+| security-scan → slack-notify | Compatible | Compatible | SecurityReport ⊂ ReviewReport (subtype) |
+| code-review → summarize-doc | Incompatible | Incompatible | ReviewReport ≠ TextDocument |
+| file-search → deploy-service | Incompatible | Incompatible | JSON ≠ PatchSet |
+| db-query → summarize-doc | Incompatible | Incompatible | DataTable ≠ TextDocument |
+| web-scraper → translate-text | Incompatible | Incompatible | StructuredData ≠ TextDocument |
+| translate-text → deploy-service | Incompatible | Incompatible | TranslatedText ≠ PatchSet |
+| git-commit → web-scraper | Incompatible | Incompatible | CommitRef ≠ URL |
 
-Baseline tools cannot participate — no typed interfaces for static verification.
+Baseline tools score 0/8 — MCP spec has no typed interface model for static composition verification.
 
 ---
-
-## References
-
-- **BFCL** (Berkeley Function Calling Leaderboard) — AST-match evaluation for function calling accuracy. gorilla.cs.berkeley.edu/leaderboard.html
-- **MCPToolBench++** — MCP tool invocation accuracy benchmark. arxiv.org/abs/2508.07575
-- **MCP-AgentBench** — Real-world MCP task completion benchmark. arxiv.org/abs/2509.09734
 
 ## Reproducing
 
 ```bash
 cd effector-bench
+npm install
 
-# Tier A: Toolchain accuracy
-node benchmark.js --verbose
+# Run both tiers
+npm run bench:all:verbose
 
-# Tier B: Schema quality comparison
-node tier-b/benchmark.js --verbose
+# Or individually
+npm run bench:verbose                          # Tier A
+npm run bench:tier-b:verbose                   # Tier B
+npm run bench:verbose -- --category security   # Single Tier A category
 ```
 
-Both benchmarks are deterministic, require no API keys, and complete in <10ms combined.
+Both tiers are deterministic, require no API keys, and complete in <10ms combined.
+
+---
+
+## References
+
+1. **BFCL** — Berkeley Function Calling Leaderboard. Gorilla Project, UC Berkeley. gorilla.cs.berkeley.edu/leaderboard.html
+2. **API-Bank** — Li et al., "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs." ACL 2023.
+3. **τ-bench** — Yao et al., "τ-bench: A Benchmark for Tool-Agent-User Interaction." 2024.
+4. **MCP-Bench** — github.com/modelcontextprotocol/mcp-bench
+5. **ToolSword** — Ye et al., "ToolSword: Unveiling Safety Issues of LLMs in Tool Learning." 2024.
+6. **SafeToolBench** — Guo et al., "SafeToolBench: Evaluating Safety of Tool-Augmented LLMs." 2024.
+7. **MCPToolBench++** — arxiv.org/abs/2508.07575
+8. **MCP-AgentBench** — arxiv.org/abs/2509.09734
+9. **Nexus** — Srinivasan et al., "NexusRaven: Function Calling Benchmark." 2023.
+10. **ToolBench** — Qin et al., "ToolBench: Tool Learning Benchmark." 2023.
+11. **Seal-Tools** — Self-Instruct Tool Learning Evaluation. 2024.

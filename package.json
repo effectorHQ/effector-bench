@@ -1,12 +1,19 @@
 {
   "name": "@effectorhq/bench",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "private": true,
-  "description": "Benchmark suite for the effector toolchain — 200 test cases across 5 verification categories",
+  "description": "Two-tier benchmark suite for the effector toolchain. Tier A: 179 deterministic accuracy tests. Tier B: controlled variable schema quality comparison grounded in BFCL, τ-bench, ToolSword, MCPToolBench++, and API-Bank.",
   "scripts": {
     "bench": "node benchmark.js",
-    "bench:verbose": "node benchmark.js --verbose"
+    "bench:verbose": "node benchmark.js --verbose",
+    "bench:tier-b": "node tier-b/benchmark.js",
+    "bench:tier-b:verbose": "node tier-b/benchmark.js --verbose",
+    "bench:all": "node benchmark.js; node tier-b/benchmark.js",
+    "bench:all:verbose": "node benchmark.js --verbose; node tier-b/benchmark.js --verbose"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@effectorhq/core": "^1.0.0",

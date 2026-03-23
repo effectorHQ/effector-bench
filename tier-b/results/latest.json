@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-03-23T08:21:38.333Z",
-  "runtime_ms": 3.54,
+  "timestamp": "2026-03-23T13:13:29.979Z",
+  "runtime_ms": 3.33,
   "methodology": {
     "description": "Controlled variable experiment: same 10 MCP tools scored under two schema representations. Evaluation dimensions grounded in published academic benchmarks.",
     "control": "Raw MCP JSON Schema tool descriptions (baseline)",
