@@ -46,13 +46,14 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { compile, checkTypeCompatibility, setCatalog } from '@effectorhq/core';
+import { compile, checkTypeCompatibility, setCatalog, setTypeCatalog } from '@effectorhq/core';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const require = createRequire(import.meta.url);
 const typesCatalog = JSON.parse(readFileSync(require.resolve('@effectorhq/types/types.json'), 'utf-8'));
-setCatalog(typesCatalog);
+setCatalog(typesCatalog);       // type-checker: enables compatibility checks
+setTypeCatalog(typesCatalog);   // compiler: enables interface → inputSchema expansion
 
 const verbose = process.argv.includes('--verbose');
 
@@ -569,10 +570,10 @@ if (regressions.length > 0) {
     console.log(`  \x1b[33m⚠\x1b[0m ${r.tool.padEnd(18)} ${r.dimension.padEnd(22)} ${r.baseline}→${r.effector} (\x1b[33m${r.delta}\x1b[0m)`);
   }
   console.log('');
-  console.log('  Root cause: compile() generates inputSchema.properties only for');
-  console.log('  envRead variables. Interface types are stored in _interface metadata');
-  console.log('  but not expanded to JSON Schema parameter definitions.');
-  console.log('  Impact: D2 (Parameter Extraction) regresses for tools without envRead.');
+  for (const r of regressions) {
+    const dim = DIMENSIONS.find(d => d.key === r.dimension);
+    console.log(`  Note: ${dim?.id || r.dimension} — review scoring calibration`);
+  }
   console.log('');
 }
 
@@ -673,9 +674,9 @@ const output = {
   aggregated,
   regressions: {
     count: regressions.length,
-    rootCause: 'compile() generates inputSchema.properties only for envRead variables. Interface types stored in _interface metadata but not expanded to JSON Schema parameters.',
-    impact: 'D2 (Parameter Extraction Signal) regresses for 6/10 tools lacking envRead declarations.',
-    recommendation: 'Expand compiler to derive parameter schemas from type catalog entries.',
+    note: regressions.length === 0
+      ? 'No regressions. Compiler now expands interface input types into inputSchema.properties via type catalog lookup.'
+      : 'Regressions found — see details.',
     details: regressions,
   },
   tools: toolResults,

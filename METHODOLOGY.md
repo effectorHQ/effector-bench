@@ -141,9 +141,9 @@ Each dimension is grounded in findings from established academic benchmarks. We 
 | Dimension | Baseline (μ ± σ) | Effector (μ ± σ) | Δ |
 |---|---|---|---|
 | D1 Function Selection | 10 ± 3.6 | 38 ± 7.4 | **+28** |
-| D2 Parameter Extraction | 37 ± 12.6 | 23 ± 24.3 | **-14** |
-| D5 Schema Completeness | 29 ± 4.4 | 66 ± 13.5 | **+37** |
-| **Comparable Average** | **25 ± 5.8** | **43 ± 11.7** | **+18** |
+| D2 Parameter Extraction | 37 ± 12.6 | 73 ± 16.5 | **+36** |
+| D5 Schema Completeness | 29 ± 4.4 | 93 ± 11.5 | **+64** |
+| **Comparable Average** | **25 ± 5.8** | **68 ± 8.6** | **+43** |
 
 #### Differential Dimensions (capabilities effector adds)
 
@@ -157,26 +157,15 @@ Each dimension is grounded in findings from established academic benchmarks. We 
 
 | | Baseline | Effector | Δ |
 |---|---|---|---|
-| **Combined Overall** | **18 ± 3.5** | **54 ± 9.0** | **+36** |
+| **Combined Overall** | **18 ± 3.5** | **69 ± 8.5** | **+51** |
 
-### Regression Analysis
+### Regressions
 
-**6/10 tools** show D2 (Parameter Extraction) regression:
+**0 regressions.** All 50 tool × dimension measurements show improvement over baseline.
 
-| Tool | Baseline | Effector | Δ |
-|---|---|---|---|
-| file-search | 56 | 3 | -53 |
-| code-review | 25 | 3 | -22 |
-| web-scraper | 25 | 3 | -22 |
-| git-commit | 55 | 3 | -52 |
-| security-scan | 25 | 3 | -22 |
-| summarize-doc | 55 | 3 | -52 |
+The compiler now expands `interface.input` type definitions from the type catalog into `inputSchema.properties` via `setTypeCatalog()` + `expandInterfaceInput()`. This means tools like `file-search` (input: `FilePath`) get proper parameter schemas (`path`, `exists`, `type`, `mimeType`) derived from `effector-types/types.json` field definitions, even without `envRead` declarations.
 
-**Root cause**: `compile()` generates `inputSchema.properties` only for `envRead` environment variables. Interface types are stored in `_interface` metadata but not expanded to JSON Schema parameter definitions. Tools without `envRead` produce nearly-empty parameter schemas.
-
-**Impact**: D2 score drops from μ=37 (baseline) to μ=23 (effector). High variance (σ=24.3) reflects the bimodal distribution — tools with envRead score well, tools without score near zero.
-
-**Recommendation**: Expand the compiler to derive parameter schemas from type catalog entries. This would eliminate the regression and add an estimated +20-30 to the comparable average.
+Previously (v2.0.0-pre), `compile()` only generated `inputSchema.properties` for `envRead` variables. This caused D2 regression in 6/10 tools. The fix was implemented in `effector-core/src/compiler-targets.js` and raised the comparable Δ from +18 to **+43**.
 
 ### Composition Chain Verification
 

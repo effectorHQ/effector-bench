@@ -5,6 +5,12 @@ effector-bench figure generator.
 Reads results/{latest.json} and tier-b/results/{latest.json},
 produces publication-quality figures in figures/out/.
 
+Color palette aligned to brand-kit/colors.md:
+  Primary:   Claw Red #E03E3E — all effector data
+  Secondary: Signal Orange #F27A3A — positive delta labels, ≥85% bars
+  Neutral:   Ash #9CA3AF — baseline data
+  Warning:   Amber #F59E0B — <85% bars, caution
+
 Usage:
     python3 figures/generate.py            # generate all
     python3 figures/generate.py --dpi 200  # custom DPI
@@ -14,13 +20,17 @@ import json
 import os
 import sys
 import argparse
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
 
 # ── Paths ────────────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,15 +38,23 @@ TIER_A_JSON = os.path.join(ROOT, "results", "latest.json")
 TIER_B_JSON = os.path.join(ROOT, "tier-b", "results", "latest.json")
 OUT_DIR = os.path.join(ROOT, "figures", "out")
 
-# ── Style constants ──────────────────────────────────────────────────
-CLAW_RED   = "#E03E3E"
-CLAW_DARK  = "#1A1A2E"
-CLAW_GRAY  = "#6B7280"
-CLAW_LIGHT = "#F3F4F6"
-AMBER      = "#F59E0B"
-GREEN      = "#10B981"
-BLUE       = "#3B82F6"
-BASELINE_C = "#94A3B8"   # slate-400
+# ── Brand palette (from brand-kit/colors.md) ─────────────────────────
+CLAW_RED      = "#E03E3E"   # Primary — marks things that matter
+SIGNAL_ORANGE = "#F27A3A"   # Secondary — interaction, progress
+CHARCOAL      = "#1A1A1A"   # Primary dark background
+SLATE         = "#6B7280"   # Secondary text
+ASH           = "#9CA3AF"   # Muted / disabled / baseline
+STONE         = "#D1D5DB"   # Light borders
+BONE          = "#F5F0EB"   # Light background
+AMBER         = "#F59E0B"   # Semantic: warning
+CLAW_RED_DARK = "#B91C1C"   # Error bar whisker color
+
+# Custom sequential colormap: Bone → Signal Orange → Claw Red
+BRAND_CMAP = LinearSegmentedColormap.from_list(
+    "effector",
+    [BONE, "#F9D4B0", SIGNAL_ORANGE, "#E85A3A", CLAW_RED, "#A02020"],
+    N=256,
+)
 
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -71,21 +89,19 @@ def fig_tier_a_categories(a, dpi):
     fig, ax = plt.subplots(figsize=(7.5, 3.2))
 
     y = np.arange(len(names))
-    colors = [GREEN if s == 100 else (AMBER if s < 85 else BLUE) for s in scores]
+    # Brand: Claw Red for 100%, Signal Orange for ≥85%, Amber for <85%
+    colors = [CLAW_RED if s == 100 else (AMBER if s < 85 else SIGNAL_ORANGE) for s in scores]
 
     bars = ax.barh(y, scores, height=0.55, color=colors, edgecolor="white", linewidth=0.5)
 
     for i, (bar, s, ct) in enumerate(zip(bars, scores, counts)):
-        # Score label inside or outside
         if s > 30:
             ax.text(s - 1.5, i, f"{s}%", ha="right", va="center",
                     color="white", fontweight="bold", fontsize=10)
         else:
             ax.text(s + 1, i, f"{s}%", ha="left", va="center",
                     color=colors[i], fontweight="bold", fontsize=10)
-        # Case count at right edge
-        ax.text(101, i, ct, ha="left", va="center",
-                color=CLAW_GRAY, fontsize=9)
+        ax.text(101, i, ct, ha="left", va="center", color=SLATE, fontsize=9)
 
     ax.set_yticks(y)
     ax.set_yticklabels(names)
@@ -93,24 +109,22 @@ def fig_tier_a_categories(a, dpi):
     ax.set_xlabel("Accuracy (%)")
     ax.invert_yaxis()
     ax.xaxis.set_major_locator(mticker.MultipleLocator(25))
-    ax.axvline(x=100, color=CLAW_LIGHT, linewidth=0.8, zorder=0)
+    ax.axvline(x=100, color=BONE, linewidth=0.8, zorder=0)
 
     overall = a["score"]
-    ax.set_title(f"Tier A — Toolchain Accuracy    overall {overall}%  ({a['totalPassed']}/{a['totalCases']} cases)",
+    ax.set_title(f"Tier A \u2014 Toolchain Accuracy    overall {overall}%  ({a['totalPassed']}/{a['totalCases']} cases)",
                  loc="left", pad=10)
 
-    # Legend
-    from matplotlib.lines import Line2D
     legend_elems = [
-        Line2D([0], [0], marker="s", color="w", markerfacecolor=GREEN, markersize=8, label="100%"),
-        Line2D([0], [0], marker="s", color="w", markerfacecolor=BLUE, markersize=8, label="≥85%"),
+        Line2D([0], [0], marker="s", color="w", markerfacecolor=CLAW_RED, markersize=8, label="100%"),
+        Line2D([0], [0], marker="s", color="w", markerfacecolor=SIGNAL_ORANGE, markersize=8, label="\u226585%"),
         Line2D([0], [0], marker="s", color="w", markerfacecolor=AMBER, markersize=8, label="<85%"),
     ]
     ax.legend(handles=legend_elems, loc="lower right", frameon=False, fontsize=9)
 
     fig.savefig(os.path.join(OUT_DIR, "tier-a-categories.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ tier-a-categories.png")
+    print("  \u2713 tier-a-categories.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -138,24 +152,20 @@ def fig_tier_b_dimensions(b, dpi):
     x = np.arange(len(dim_keys))
     w = 0.32
 
-    bars_b = ax.bar(x - w/2, baseline_vals, w, label="Baseline MCP",
-                    color=BASELINE_C, edgecolor="white", linewidth=0.5,
-                    yerr=baseline_std, capsize=3, error_kw={"linewidth": 1, "color": CLAW_GRAY})
-    bars_e = ax.bar(x + w/2, effector_vals, w, label="effector",
-                    color=CLAW_RED, edgecolor="white", linewidth=0.5,
-                    yerr=effector_std, capsize=3, error_kw={"linewidth": 1, "color": "#B91C1C"})
+    ax.bar(x - w/2, baseline_vals, w, label="Baseline MCP",
+           color=ASH, edgecolor="white", linewidth=0.5,
+           yerr=baseline_std, capsize=3, error_kw={"linewidth": 1, "color": SLATE})
+    ax.bar(x + w/2, effector_vals, w, label="effector",
+           color=CLAW_RED, edgecolor="white", linewidth=0.5,
+           yerr=effector_std, capsize=3, error_kw={"linewidth": 1, "color": CLAW_RED_DARK})
 
-    # Delta labels above effector bars
+    # Delta labels — Signal Orange for positive
     for i, (bv, ev) in enumerate(zip(baseline_vals, effector_vals)):
         delta = ev - bv
         sign = "+" if delta >= 0 else ""
-        color = GREEN if delta > 0 else CLAW_RED
+        color = SIGNAL_ORANGE if delta > 0 else CLAW_RED
         ax.text(x[i] + w/2, ev + effector_std[i] + 3, f"{sign}{delta}",
                 ha="center", va="bottom", fontsize=9, fontweight="bold", color=color)
-
-    # D2 regression marker
-    ax.annotate("regression", xy=(1 + w/2, effector_vals[1] + effector_std[1] + 2),
-                fontsize=8, color=AMBER, ha="center", fontweight="bold")
 
     # Shade differential dimensions
     for i, cls in enumerate(dim_class):
@@ -164,25 +174,24 @@ def fig_tier_b_dimensions(b, dpi):
 
     ax.set_xticks(x)
     ax.set_xticklabels([label for _, label in dim_keys], fontsize=9)
-    ax.set_ylabel("Score (0–100)")
+    ax.set_ylabel("Score (0\u2013100)")
     ax.set_ylim(0, 115)
     ax.yaxis.set_major_locator(mticker.MultipleLocator(25))
     ax.legend(loc="upper left", frameon=False)
 
-    # Annotation for shaded area
     ax.text(3, 108, "shaded = differential (effector-only capabilities)",
-            fontsize=8, color=CLAW_GRAY, ha="center", style="italic")
+            fontsize=8, color=SLATE, ha="center", style="italic")
 
-    ax.set_title("Tier B — Schema Quality: Baseline MCP vs effector (n = 10 tools)",
+    ax.set_title("Tier B \u2014 Schema Quality: Baseline MCP vs effector (n = 10 tools)",
                  loc="left", pad=10)
 
     fig.savefig(os.path.join(OUT_DIR, "tier-b-dimensions.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ tier-b-dimensions.png")
+    print("  \u2713 tier-b-dimensions.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# Figure 3: Tier B — Per-Tool Delta Heatmap
+# Figure 3: Tier B — Per-Tool Delta Heatmap (brand colormap)
 # ═══════════════════════════════════════════════════════════════════════
 def fig_tier_b_heatmap(b, dpi):
     tools = b["tools"]
@@ -192,7 +201,6 @@ def fig_tier_b_heatmap(b, dpi):
                  "D4: Safety\nPerms", "D5: Schema\nComplete"]
 
     tool_names = [t["id"] for t in tools]
-    # Compute delta matrix
     matrix = np.zeros((len(tools), len(dim_keys)))
     for i, t in enumerate(tools):
         for j, dk in enumerate(dim_keys):
@@ -200,36 +208,39 @@ def fig_tier_b_heatmap(b, dpi):
 
     fig, ax = plt.subplots(figsize=(7.5, 5.5))
 
-    # Custom diverging colormap: blue for negative, white at 0, red for positive
-    from matplotlib.colors import TwoSlopeNorm
     vmin, vmax = matrix.min(), matrix.max()
-    norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+    if vmin < 0:
+        from matplotlib.colors import TwoSlopeNorm
+        norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+        cmap = "RdBu_r"
+    else:
+        norm = None
+        cmap = BRAND_CMAP
 
-    im = ax.imshow(matrix, cmap="RdBu_r", norm=norm, aspect="auto")
+    im = ax.imshow(matrix, cmap=cmap, norm=norm, aspect="auto",
+                   vmin=max(vmin, 0), vmax=vmax)
 
-    # Annotate cells
     for i in range(len(tools)):
         for j in range(len(dim_keys)):
             val = int(matrix[i, j])
-            color = "white" if abs(val) > 40 else "black"
+            color = "white" if val > 45 else CHARCOAL
             sign = "+" if val > 0 else ""
             ax.text(j, i, f"{sign}{val}", ha="center", va="center",
-                    fontsize=9, color=color, fontweight="bold" if abs(val) > 30 else "normal")
+                    fontsize=9, color=color, fontweight="bold" if val > 30 else "normal")
 
     ax.set_xticks(np.arange(len(dim_keys)))
     ax.set_xticklabels(dim_short, fontsize=9)
     ax.set_yticks(np.arange(len(tools)))
     ax.set_yticklabels(tool_names, fontsize=9)
 
-    ax.set_title("Tier B — Per-Tool Score Delta (effector − baseline)", loc="left", pad=10)
+    ax.set_title("Tier B \u2014 Per-Tool Score Delta (effector \u2212 baseline)", loc="left", pad=10)
 
-    # Colorbar
     cbar = fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
-    cbar.set_label("Δ Score", fontsize=10)
+    cbar.set_label("\u0394 Score", fontsize=10)
 
     fig.savefig(os.path.join(OUT_DIR, "tier-b-heatmap.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ tier-b-heatmap.png")
+    print("  \u2713 tier-b-heatmap.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -252,46 +263,46 @@ def fig_tier_b_summary(b, dpi):
         delta = em - bm
 
         bars = ax.bar(["Baseline", "effector"], [bm, em],
-                      color=[BASELINE_C, CLAW_RED], width=0.5,
+                      color=[ASH, CLAW_RED], width=0.5,
                       edgecolor="white", linewidth=0.5)
 
         for bar, val in zip(bars, [bm, em]):
             ax.text(bar.get_x() + bar.get_width()/2, val + 2,
                     str(val), ha="center", va="bottom", fontweight="bold", fontsize=12)
 
-        # Delta arrow
+        # Delta label — Signal Orange
         sign = "+" if delta > 0 else ""
         ax.annotate(f"{sign}{delta}", xy=(1, em + 8),
                     fontsize=14, fontweight="bold", ha="center",
-                    color=GREEN if delta > 0 else CLAW_RED)
+                    color=SIGNAL_ORANGE)
 
         ax.set_ylim(0, 100)
         ax.set_title(label, fontsize=11, fontweight="bold")
         ax.yaxis.set_major_locator(mticker.MultipleLocator(25))
         ax.spines["left"].set_visible(True)
 
-    fig.suptitle("Tier B — Aggregate Deltas by Metric Class", fontsize=13,
+    fig.suptitle("Tier B \u2014 Aggregate Deltas by Metric Class", fontsize=13,
                  fontweight="bold", y=1.02)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT_DIR, "tier-b-summary.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ tier-b-summary.png")
+    print("  \u2713 tier-b-summary.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# Figure 5: Tier B — Regression Detail (D2 focus)
+# Figure 5: Tier B — D2 Parameter Extraction Detail (dumbbell chart)
 # ═══════════════════════════════════════════════════════════════════════
-def fig_tier_b_regression(b, dpi):
+def fig_tier_b_d2_detail(b, dpi):
     tools = b["tools"]
     dim_key = "parameterExtraction"
 
     tool_names = [t["id"] for t in tools]
     baseline   = [t["baseline"][dim_key] for t in tools]
     effector   = [t["effector"][dim_key] for t in tools]
-    deltas     = [e - b for b, e in zip(baseline, effector)]
+    deltas     = [e - bl for bl, e in zip(baseline, effector)]
 
-    # Sort by delta ascending (worst regressions first)
-    order = np.argsort(deltas)
+    # Sort by delta descending
+    order = np.argsort(deltas)[::-1]
     tool_names = [tool_names[i] for i in order]
     baseline   = [baseline[i] for i in order]
     effector   = [effector[i] for i in order]
@@ -300,46 +311,42 @@ def fig_tier_b_regression(b, dpi):
     fig, ax = plt.subplots(figsize=(7.5, 4))
 
     y = np.arange(len(tool_names))
-    # Draw baseline as gray dots, effector as colored dots, connect with lines
     for i in range(len(tool_names)):
-        color = CLAW_RED if deltas[i] < 0 else GREEN
+        # Brand: Claw Red for improvement, Amber for regression
+        color = CLAW_RED if deltas[i] > 0 else AMBER
         ax.plot([baseline[i], effector[i]], [i, i], color=color, linewidth=2, zorder=1)
-        ax.scatter(baseline[i], i, color=BASELINE_C, s=60, zorder=2, edgecolors="white", linewidths=0.5)
+        ax.scatter(baseline[i], i, color=ASH, s=60, zorder=2, edgecolors="white", linewidths=0.5)
         ax.scatter(effector[i], i, color=color, s=60, zorder=2, edgecolors="white", linewidths=0.5)
 
-        # Delta label
         sign = "+" if deltas[i] >= 0 else ""
         ax.text(max(baseline[i], effector[i]) + 3, i,
                 f"{sign}{deltas[i]}", va="center", fontsize=9,
-                color=color, fontweight="bold")
+                color=SIGNAL_ORANGE, fontweight="bold")
 
     ax.set_yticks(y)
     ax.set_yticklabels(tool_names, fontsize=9)
     ax.set_xlabel("D2: Parameter Extraction Score")
-    ax.set_xlim(-5, 80)
+    ax.set_xlim(-5, 110)
     ax.invert_yaxis()
 
-    # Legend
-    from matplotlib.lines import Line2D
     legend_elems = [
-        Line2D([0], [0], marker="o", color="w", markerfacecolor=BASELINE_C, markersize=8, label="Baseline"),
-        Line2D([0], [0], marker="o", color="w", markerfacecolor=CLAW_RED, markersize=8, label="effector (regressed)"),
-        Line2D([0], [0], marker="o", color="w", markerfacecolor=GREEN, markersize=8, label="effector (improved)"),
+        Line2D([0], [0], marker="o", color="w", markerfacecolor=ASH, markersize=8, label="Baseline MCP"),
+        Line2D([0], [0], marker="o", color="w", markerfacecolor=CLAW_RED, markersize=8, label="effector"),
     ]
     ax.legend(handles=legend_elems, loc="lower right", frameon=False, fontsize=9)
 
-    ax.set_title("D2 Regression — compile() omits parameters without envRead",
+    agg_delta = b["aggregated"][dim_key]["delta"]
+    ax.set_title(f"D2 Parameter Extraction \u2014 type catalog expansion (\u0394+{agg_delta} avg)",
                  loc="left", pad=10)
 
-    # Root cause note
-    ax.text(0.02, -0.12,
-            "Root cause: compile() only generates inputSchema.properties for envRead variables.\n"
-            "Tools without envRead produce empty parameter schemas, score drops below baseline.",
-            transform=ax.transAxes, fontsize=8, color=CLAW_GRAY, va="top")
+    ax.text(0.02, -0.10,
+            "Grounded in: BFCL + API-Bank (Li et al., ACL 2023)\n"
+            "Compiler expands interface input types into JSON Schema properties via type catalog.",
+            transform=ax.transAxes, fontsize=8, color=SLATE, va="top")
 
-    fig.savefig(os.path.join(OUT_DIR, "tier-b-regression.png"), dpi=dpi)
+    fig.savefig(os.path.join(OUT_DIR, "tier-b-d2-detail.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ tier-b-regression.png")
+    print("  \u2713 tier-b-d2-detail.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -350,13 +357,13 @@ def fig_overview_compact(a, b, dpi):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3.8),
                                     gridspec_kw={"width_ratios": [1, 1.2]})
 
-    # ── Left: Tier A radial-style horizontal bars ──
+    # ── Left: Tier A horizontal bars ──
     cats = a["categories"]
     names  = [c["label"] for c in cats]
     scores = [c["score"] for c in cats]
 
     y = np.arange(len(names))
-    colors = [GREEN if s == 100 else (AMBER if s < 85 else BLUE) for s in scores]
+    colors = [CLAW_RED if s == 100 else (AMBER if s < 85 else SIGNAL_ORANGE) for s in scores]
     bars = ax1.barh(y, scores, height=0.5, color=colors, edgecolor="white", linewidth=0.5)
 
     for i, (bar, s) in enumerate(zip(bars, scores)):
@@ -368,7 +375,7 @@ def fig_overview_compact(a, b, dpi):
     ax1.set_yticklabels(names, fontsize=9)
     ax1.set_xlim(0, 105)
     ax1.invert_yaxis()
-    ax1.set_title(f"Tier A — {a['score']}% ({a['totalPassed']}/{a['totalCases']})",
+    ax1.set_title(f"Tier A \u2014 {a['score']}% ({a['totalPassed']}/{a['totalCases']})",
                   loc="left", fontsize=11)
     ax1.xaxis.set_visible(False)
 
@@ -386,30 +393,29 @@ def fig_overview_compact(a, b, dpi):
 
     x = np.arange(len(dim_keys))
     w = 0.3
-    ax2.bar(x - w/2, bvals, w, color=BASELINE_C, label="Baseline", edgecolor="white")
+    ax2.bar(x - w/2, bvals, w, color=ASH, label="Baseline", edgecolor="white")
     ax2.bar(x + w/2, evals, w, color=CLAW_RED, label="effector", edgecolor="white")
 
     for i, (bv, ev) in enumerate(zip(bvals, evals)):
         d = ev - bv
         sign = "+" if d >= 0 else ""
-        c = GREEN if d > 0 else AMBER
         ax2.text(x[i] + w/2, ev + 3, f"{sign}{d}", ha="center", fontsize=8,
-                 fontweight="bold", color=c)
+                 fontweight="bold", color=SIGNAL_ORANGE)
 
     ax2.set_xticks(x)
     ax2.set_xticklabels([l for _, l in dim_keys], fontsize=10)
     ax2.set_ylim(0, 110)
-    ax2.set_title(f"Tier B — Δ{b['aggregated']['overall']['delta']} overall (n=10)",
+    ax2.set_title(f"Tier B \u2014 \u0394{b['aggregated']['overall']['delta']} overall (n=10)",
                   loc="left", fontsize=11)
     ax2.legend(loc="upper left", frameon=False, fontsize=9)
     ax2.yaxis.set_major_locator(mticker.MultipleLocator(25))
 
-    fig.suptitle("effector-bench v2.0 — deterministic, no LLM, <10ms",
-                 fontsize=12, fontweight="bold", color=CLAW_DARK, y=1.01)
+    fig.suptitle("effector-bench v2.0 \u2014 deterministic, no LLM, <10ms",
+                 fontsize=12, fontweight="bold", color=CHARCOAL, y=1.01)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT_DIR, "overview-compact.png"), dpi=dpi)
     plt.close(fig)
-    print("  ✓ overview-compact.png")
+    print("  \u2713 overview-compact.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -430,9 +436,9 @@ def main():
     fig_tier_b_dimensions(b, args.dpi)
     fig_tier_b_heatmap(b, args.dpi)
     fig_tier_b_summary(b, args.dpi)
-    fig_tier_b_regression(b, args.dpi)
+    fig_tier_b_d2_detail(b, args.dpi)
     fig_overview_compact(a, b, args.dpi)
-    print(f"\nDone — {len(os.listdir(OUT_DIR))} figures in figures/out/")
+    print(f"\nDone \u2014 {len(os.listdir(OUT_DIR))} figures in figures/out/")
 
 
 if __name__ == "__main__":

@@ -6,8 +6,8 @@ Two-tier benchmark suite for the effector toolchain.
 **Tier B** measures schema quality improvement — controlled variable experiment comparing baseline MCP JSON Schema vs effector-compiled schemas, grounded in established academic benchmarks.
 
 ```
-Tier A  89.9% accuracy  (161/179 cases, 18 known gaps, 2.9ms)
-Tier B  +36 combined Δ  (+18 comparable, +64 differential, 6 regressions)
+Tier A  89.9% accuracy  (161/179 cases, 18 known gaps, <5ms)
+Tier B  +51 combined Δ  (+43 comparable, +64 differential, 0 regressions)
 ```
 
 <p align="center">
@@ -121,9 +121,9 @@ Controlled variable experiment: same 10 MCP tools, two schema representations. E
 
 | | Baseline (μ) | Effector (μ) | Δ |
 |---|---|---|---|
-| Comparable Average | 25 | 43 | **+18** |
+| Comparable Average | 25 | 68 | **+43** |
 | Differential Average | 7 | 71 | **+64** |
-| Combined Overall | 18 | 54 | **+36** |
+| Combined Overall | 18 | 69 | **+51** |
 
 <p align="center">
   <img src="figures/out/tier-b-summary.png" alt="Tier B aggregate deltas by metric class" width="750" />
@@ -131,18 +131,18 @@ Controlled variable experiment: same 10 MCP tools, two schema representations. E
 
 ### Per-Tool Breakdown
 
-The heatmap below shows the score delta (effector − baseline) for each tool × dimension combination. The D2 column makes the parameter extraction regression visually obvious:
+The heatmap below shows the score delta (effector − baseline) for each tool × dimension combination. All 50 cells are positive — zero regressions:
 
 <p align="center">
   <img src="figures/out/tier-b-heatmap.png" alt="Tier B per-tool score delta heatmap" width="650" />
 </p>
 
-### Regressions
+### D2 Parameter Extraction — Compiler Fix
 
-6/10 tools show **D2 (Parameter Extraction) regression**. Root cause: `compile()` generates `inputSchema.properties` only for `envRead` variables. Tools without `envRead` produce empty parameter schemas, scoring lower than baseline. This is a real compiler limitation, not a measurement artifact.
+The compiler now expands `interface.input` type definitions from the type catalog into `inputSchema.properties`. This means tools like `file-search` (input: `FilePath`) get proper parameter schemas (`path`, `exists`, `type`, `mimeType`) even without `envRead` declarations.
 
 <p align="center">
-  <img src="figures/out/tier-b-regression.png" alt="D2 regression dumbbell chart" width="700" />
+  <img src="figures/out/tier-b-d2-detail.png" alt="D2 parameter extraction improvement" width="700" />
 </p>
 
 ### Composition Chain Verification
@@ -171,9 +171,9 @@ The heatmap below shows the score delta (effector − baseline) for each tool ×
 ```json
 {
   "aggregated": {
-    "overall": { "baseline": { "mean": 18 }, "effector": { "mean": 54 }, "delta": 36 }
+    "overall": { "baseline": { "mean": 18 }, "effector": { "mean": 69 }, "delta": 51 }
   },
-  "regressions": { "count": 6, "rootCause": "..." },
+  "regressions": { "count": 0 },
   "compositionChains": { "total": 8, "passed": 8 },
   "tools": [...]
 }

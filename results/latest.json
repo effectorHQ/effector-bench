@@ -1,12 +1,12 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-03-23T13:13:29.937Z",
+  "timestamp": "2026-03-24T00:13:02.198Z",
   "effectorVersion": "1.0.0",
   "score": 89.9,
   "totalCases": 179,
   "totalPassed": 161,
   "totalFailed": 18,
-  "totalMs": 3.32,
+  "totalMs": 4.08,
   "categories": [
     {
       "name": "type-resolution",
@@ -15,7 +15,7 @@
       "cases": 57,
       "passed": 50,
       "failed": 7,
-      "timeMs": 0.43
+      "timeMs": 0.85
     },
     {
       "name": "validation",
@@ -24,7 +24,7 @@
       "cases": 29,
       "passed": 26,
       "failed": 3,
-      "timeMs": 0.32
+      "timeMs": 0.39
     },
     {
       "name": "composition",
@@ -33,7 +33,7 @@
       "cases": 30,
       "passed": 30,
       "failed": 0,
-      "timeMs": 0.37
+      "timeMs": 0.47
     },
     {
       "name": "security",
@@ -42,7 +42,7 @@
       "cases": 43,
       "passed": 35,
       "failed": 8,
-      "timeMs": 1.29,
+      "timeMs": 1.67,
       "f1": 0.84
     },
     {
@@ -52,7 +52,7 @@
       "cases": 20,
       "passed": 20,
       "failed": 0,
-      "timeMs": 0.92
+      "timeMs": 0.69
     }
   ]
 }

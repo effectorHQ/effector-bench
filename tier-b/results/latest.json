@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-03-23T13:13:29.979Z",
-  "runtime_ms": 3.33,
+  "timestamp": "2026-03-24T00:13:03.199Z",
+  "runtime_ms": 5.49,
   "methodology": {
     "description": "Controlled variable experiment: same 10 MCP tools scored under two schema representations. Evaluation dimensions grounded in published academic benchmarks.",
     "control": "Raw MCP JSON Schema tool descriptions (baseline)",
@@ -146,11 +146,11 @@
         "median": 35
       },
       "effector": {
-        "mean": 23,
-        "stdDev": 24.3,
-        "median": 3
+        "mean": 73,
+        "stdDev": 16.5,
+        "median": 79
       },
-      "delta": -14
+      "delta": 36
     },
     "compositionSafety": {
       "baseline": {
@@ -185,11 +185,11 @@
         "median": 27
       },
       "effector": {
-        "mean": 66,
-        "stdDev": 13.5,
-        "median": 68
+        "mean": 93,
+        "stdDev": 11.5,
+        "median": 100
       },
-      "delta": 37
+      "delta": 64
     },
     "comparableAvg": {
       "baseline": {
@@ -198,11 +198,11 @@
         "median": 24
       },
       "effector": {
-        "mean": 43,
-        "stdDev": 11.7,
-        "median": 37
+        "mean": 68,
+        "stdDev": 8.6,
+        "median": 71
       },
-      "delta": 18
+      "delta": 43
     },
     "differentialAvg": {
       "baseline": {
@@ -224,62 +224,17 @@
         "median": 17
       },
       "effector": {
-        "mean": 54,
-        "stdDev": 9,
-        "median": 55
+        "mean": 69,
+        "stdDev": 8.5,
+        "median": 71
       },
-      "delta": 36
+      "delta": 51
     }
   },
   "regressions": {
-    "count": 6,
-    "rootCause": "compile() generates inputSchema.properties only for envRead variables. Interface types stored in _interface metadata but not expanded to JSON Schema parameters.",
-    "impact": "D2 (Parameter Extraction Signal) regresses for 6/10 tools lacking envRead declarations.",
-    "recommendation": "Expand compiler to derive parameter schemas from type catalog entries.",
-    "details": [
-      {
-        "tool": "file-search",
-        "dimension": "parameterExtraction",
-        "baseline": 56,
-        "effector": 3,
-        "delta": -53
-      },
-      {
-        "tool": "code-review",
-        "dimension": "parameterExtraction",
-        "baseline": 25,
-        "effector": 3,
-        "delta": -22
-      },
-      {
-        "tool": "web-scraper",
-        "dimension": "parameterExtraction",
-        "baseline": 25,
-        "effector": 3,
-        "delta": -22
-      },
-      {
-        "tool": "git-commit",
-        "dimension": "parameterExtraction",
-        "baseline": 55,
-        "effector": 3,
-        "delta": -52
-      },
-      {
-        "tool": "security-scan",
-        "dimension": "parameterExtraction",
-        "baseline": 25,
-        "effector": 3,
-        "delta": -22
-      },
-      {
-        "tool": "summarize-doc",
-        "dimension": "parameterExtraction",
-        "baseline": 55,
-        "effector": 3,
-        "delta": -52
-      }
-    ]
+    "count": 0,
+    "note": "No regressions. Compiler now expands interface input types into inputSchema.properties via type catalog lookup.",
+    "details": []
   },
   "tools": [
     {
@@ -297,15 +252,15 @@
       },
       "effector": {
         "functionSelection": 27,
-        "parameterExtraction": 3,
+        "parameterExtraction": 73,
         "compositionSafety": 88,
         "safetyPermissions": 65,
-        "schemaCompleteness": 59,
-        "comparableAvg": 30,
+        "schemaCompleteness": 100,
+        "comparableAvg": 67,
         "differentialAvg": 77,
-        "overall": 48
+        "overall": 71
       },
-      "delta": 23
+      "delta": 46
     },
     {
       "id": "code-review",
@@ -322,15 +277,15 @@
       },
       "effector": {
         "functionSelection": 41,
-        "parameterExtraction": 3,
+        "parameterExtraction": 80,
         "compositionSafety": 96,
         "safetyPermissions": 65,
-        "schemaCompleteness": 66,
-        "comparableAvg": 37,
+        "schemaCompleteness": 100,
+        "comparableAvg": 74,
         "differentialAvg": 81,
-        "overall": 54
+        "overall": 76
       },
-      "delta": 40
+      "delta": 62
     },
     {
       "id": "slack-notify",
@@ -372,15 +327,15 @@
       },
       "effector": {
         "functionSelection": 52,
-        "parameterExtraction": 3,
+        "parameterExtraction": 45,
         "compositionSafety": 80,
         "safetyPermissions": 18,
-        "schemaCompleteness": 50,
-        "comparableAvg": 35,
+        "schemaCompleteness": 72,
+        "comparableAvg": 56,
         "differentialAvg": 49,
-        "overall": 41
+        "overall": 53
       },
-      "delta": 25
+      "delta": 37
     },
     {
       "id": "db-query",
@@ -397,15 +352,15 @@
       },
       "effector": {
         "functionSelection": 42,
-        "parameterExtraction": 51,
+        "parameterExtraction": 55,
         "compositionSafety": 88,
         "safetyPermissions": 48,
-        "schemaCompleteness": 72,
-        "comparableAvg": 55,
+        "schemaCompleteness": 94,
+        "comparableAvg": 64,
         "differentialAvg": 68,
-        "overall": 60
+        "overall": 65
       },
-      "delta": 46
+      "delta": 51
     },
     {
       "id": "git-commit",
@@ -422,15 +377,15 @@
       },
       "effector": {
         "functionSelection": 38,
-        "parameterExtraction": 3,
+        "parameterExtraction": 87,
         "compositionSafety": 88,
         "safetyPermissions": 80,
-        "schemaCompleteness": 69,
-        "comparableAvg": 37,
+        "schemaCompleteness": 100,
+        "comparableAvg": 75,
         "differentialAvg": 84,
-        "overall": 56
+        "overall": 79
       },
-      "delta": 33
+      "delta": 56
     },
     {
       "id": "security-scan",
@@ -447,15 +402,15 @@
       },
       "effector": {
         "functionSelection": 27,
-        "parameterExtraction": 3,
+        "parameterExtraction": 85,
         "compositionSafety": 88,
         "safetyPermissions": 65,
-        "schemaCompleteness": 59,
-        "comparableAvg": 30,
+        "schemaCompleteness": 100,
+        "comparableAvg": 71,
         "differentialAvg": 77,
-        "overall": 48
+        "overall": 73
       },
-      "delta": 33
+      "delta": 58
     },
     {
       "id": "deploy-service",
@@ -472,15 +427,15 @@
       },
       "effector": {
         "functionSelection": 41,
-        "parameterExtraction": 57,
+        "parameterExtraction": 99,
         "compositionSafety": 96,
         "safetyPermissions": 68,
         "schemaCompleteness": 100,
-        "comparableAvg": 66,
+        "comparableAvg": 80,
         "differentialAvg": 82,
-        "overall": 72
+        "overall": 81
       },
-      "delta": 55
+      "delta": 64
     },
     {
       "id": "translate-text",
@@ -497,15 +452,15 @@
       },
       "effector": {
         "functionSelection": 34,
-        "parameterExtraction": 51,
+        "parameterExtraction": 78,
         "compositionSafety": 88,
         "safetyPermissions": 48,
-        "schemaCompleteness": 69,
-        "comparableAvg": 51,
+        "schemaCompleteness": 100,
+        "comparableAvg": 71,
         "differentialAvg": 68,
-        "overall": 58
+        "overall": 70
       },
-      "delta": 42
+      "delta": 54
     },
     {
       "id": "summarize-doc",
@@ -522,15 +477,15 @@
       },
       "effector": {
         "functionSelection": 45,
-        "parameterExtraction": 3,
+        "parameterExtraction": 80,
         "compositionSafety": 80,
         "safetyPermissions": 25,
-        "schemaCompleteness": 50,
-        "comparableAvg": 33,
+        "schemaCompleteness": 97,
+        "comparableAvg": 74,
         "differentialAvg": 53,
-        "overall": 41
+        "overall": 65
       },
-      "delta": 22
+      "delta": 46
     }
   ],
   "compositionChains": {
